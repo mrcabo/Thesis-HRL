@@ -5,9 +5,10 @@ import time
 tasks_list = [Tasks.TURN_ON_TV]
 
 env = gym.make('household_env:Household-v0')
-env.reset()
 env.set_current_task(tasks_list[0])
+state = env.reset()
 
+print(f"State: {state}")
 for e in range(10):
     print(f"Epoch: {e}")
     env.render()
