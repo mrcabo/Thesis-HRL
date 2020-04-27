@@ -2,6 +2,7 @@ from collections import namedtuple
 
 import numpy as np
 import random
+import torch
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward', 'done'))
@@ -26,3 +27,13 @@ class ReplayMemory(object):
 
     def __len__(self):
         return len(self.memory)
+
+
+def normalize_values(state, inv=False):
+    NORM_VEC = [19., 19., 1., 1., 1., 1., 1., 8., 8., 8., 8.]
+    device = state.device
+    norm_vec = torch.tensor(NORM_VEC, device=device)
+    if inv:
+        return state * norm_vec
+    else:
+        return state / norm_vec

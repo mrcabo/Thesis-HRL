@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-from thesis_hrl.utils import ReplayMemory, Transition
+from thesis_hrl.utils import ReplayMemory, Transition, normalize_values
 from household_env.envs.house_env import Tasks
 
 
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     ep_rewards = []
     for i_episode in range(num_episodes):
         print(f"Episode {i_episode}")
-        state = torch.tensor(env.reset(), dtype=torch.float, device=q_learning.device)
+        state = normalize_values(torch.tensor(env.reset(), dtype=torch.float, device=q_learning.device))
         ep_reward = 0
         for t in count():
             env.render()
@@ -139,7 +139,7 @@ if __name__ == "__main__":
             next_state, reward, done, _ = env.step(action.item())
             ep_reward += reward
             # Convert to tensors - TODO: I gotta see if we dont run out of GPU memory if buffer gets too big..
-            next_state = torch.tensor(next_state, dtype=torch.float, device=q_learning.device)
+            next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=q_learning.device))
             reward = torch.tensor([reward], dtype=torch.float, device=q_learning.device)
             done = torch.tensor([done], dtype=torch.bool, device=q_learning.device)
 
