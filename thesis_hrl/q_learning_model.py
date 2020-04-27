@@ -115,7 +115,7 @@ def plot_info(data, title=None, labels=None):
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
     plt.plot(data)
-    plt.show()
+    plt.savefig(title)
 
 
 env = gym.make('household_env:Household-v0')
@@ -126,14 +126,14 @@ env.reset()
 
 if __name__ == "__main__":
     q_learning = QLearning(env.observation_space.shape[0], env.action_space.n)
-    num_episodes = 200
+    num_episodes = 2000
     ep_rewards = []
     for i_episode in range(num_episodes):
         print(f"Episode {i_episode}")
         state = normalize_values(torch.tensor(env.reset(), dtype=torch.float, device=q_learning.device))
         ep_reward = 0
         for t in count():
-            env.render()
+            # env.render()
             # Select action and execute it
             action = q_learning.select_action(state)
             next_state, reward, done, _ = env.step(action.item())
