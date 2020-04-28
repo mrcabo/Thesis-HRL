@@ -1,16 +1,16 @@
 #!/bin/bash
 
-#SBATCH --time=23:55:00
+#SBATCH --time=10:00:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:v100:1
-#SBATCH --mem=20GB
-#SBATCH --output=Job-%j-resnet50-pretrained.log
+#SBATCH --mem=30GB
+#SBATCH --output=Job-%j-q_learning.log
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=d.cabo.golvano@student.rug.nl
 
 module purge
-module load Python/3.6.4-fosscuda-2018a
-module load CUDA/9.1.85
+module load Python
+module load CUDA
 echo "Modules loaded"
 module list
 
@@ -19,7 +19,7 @@ python -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install --upgrade setuptools
-pip install -r requirements.txt
+pip install -e .
 
 echo "Starting execution"
 python thesis_hrl/q_learning_model.py
