@@ -35,7 +35,7 @@ class QLearning:
         self.GAMMA = 0.999
         self.EPS_START = 0.9
         self.EPS_END = 0.05
-        self.EPS_DECAY = 200
+        self.EPS_DECAY = 2000
         self.TARGET_UPDATE = 10
         # Model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -54,6 +54,8 @@ class QLearning:
         sample = random.random()
         eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
                         math.exp(-1. * self.steps_done / self.EPS_DECAY)
+        if self.steps_done % 500 == 0:
+            print(f"Epsilon threshold: {eps_threshold}")
         self.steps_done += 1
         if sample > eps_threshold:
             with torch.no_grad():
@@ -126,11 +128,12 @@ env.reset()
 
 if __name__ == "__main__":
     q_learning = QLearning(env.observation_space.shape[0], env.action_space.n)
-    num_episodes = 2000
+    num_episodes = 20000
     ep_rewards = []
     for i_episode in range(num_episodes):
         print(f"Episode {i_episode}")
-        state = normalize_values(torch.tensor(env.reset(), dtype=torch.float, device=q_learning.device))
+        state = env.reset()
+        state = normalize_values(torch.tensor(state, dtype=torch.float, device=q_learning.device))
         ep_reward = 0
         for t in count():
             # env.render()
@@ -150,6 +153,8 @@ if __name__ == "__main__":
             # Perform one step of the optimization (on the target network)
             q_learning.optimize_model()
             if done:
+                if reward > 0:
+                    print("Success!!")
                 ep_rewards.append(ep_reward)
                 # plot_info(ep_rewards, 'Episode rewards', ('N. episode', 'Reward'))
                 break
