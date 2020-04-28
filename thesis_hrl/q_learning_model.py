@@ -1,6 +1,7 @@
 import random
 import math
 from itertools import count
+from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -106,6 +107,20 @@ class QLearning:
             param.grad.data.clamp_(-1, 1)  # TODO: necessary?
         self.optimizer.step()
 
+    def save_models(self, path):
+        # Saves weights of the network to a file
+        policy_path = path / 'policy_net.pt'
+        target_path = path / 'target_net.pt'
+        torch.save(self.policy_net.state_dict(), policy_path)
+        torch.save(self.target_net.state_dict(), target_path)
+
+    def load_models(self, path):
+        # Loads weights of the network from a file
+        policy_path = path / 'policy_net.pt'
+        target_path = path / 'target_net.pt'
+        self.policy_net.load_state_dict(torch.load(policy_path))
+        self.target_net.load_state_dict(torch.load(target_path))
+
 
 def plot_info(data, title=None, labels=None):
     plt.figure()
@@ -167,5 +182,9 @@ if __name__ == "__main__":
     for val in ep_rewards[1:]:
         cum_reward.append(val + cum_reward[-1])
     plot_info(cum_reward, 'Cumulative reward', ('Episode', 'Reward'))
+
+    # Save model
+    path = Path("/home/diego/Coding/Thesis-HRL/thesis_hrl")
+    q_learning.save_models(path)
     print('Complete')
     env.close()
