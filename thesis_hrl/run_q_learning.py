@@ -45,13 +45,13 @@ def train(num_episodes, env, model, path_to_weights):
         if i_episode % model.TARGET_UPDATE == 0:
             model.target_net.load_state_dict(model.policy_net.state_dict())
         if i_episode % 100 == 0:
-            plot_info(np.array(ep_rewards), 'Episode rewards', ('Episode', 'Reward'))
+            plot_info(np.array(ep_rewards), 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
 
-    plot_info(np.array(ep_rewards), 'Episode rewards', ('Episode', 'Reward'))
+    plot_info(np.array(ep_rewards), 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
     cum_reward = [ep_rewards[0]]
     for val in ep_rewards[1:]:
         cum_reward.append(val + cum_reward[-1])
-    plot_info(cum_reward, 'Cumulative reward', ('Episode', 'Reward'))
+    plot_info(cum_reward, 'Cumulative reward', ('Episode', 'Reward'), fig_num=2)
 
     # Save model
     model.save_models(path_to_weights)

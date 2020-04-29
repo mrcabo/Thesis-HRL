@@ -122,8 +122,8 @@ class QLearning:
         self.target_net.load_state_dict(torch.load(target_path))
 
 
-def plot_info(data, title=None, labels=None):
-    plt.figure()
+def plot_info(data, title=None, labels=None, fig_num=None):
+    plt.figure(fig_num)
     plt.clf()
     if title is not None:
         plt.title(title)
