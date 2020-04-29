@@ -1,3 +1,4 @@
+import argparse
 from collections import namedtuple
 
 import numpy as np
@@ -37,3 +38,15 @@ def normalize_values(state, inv=False):
         return state * norm_vec
     else:
         return state / norm_vec
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='Grasping detection system')
+    parser.add_argument('--num_episodes', type=int, default=500,
+                        help='Number of episodes that will be run')
+    parser.add_argument('--mode', type=str, default="train",
+                        help='If it will train or test a loaded model (default: train)')
+    parser.add_argument('--path_to_weights', type=str, default="",
+                        help='path to the directory containing the model weights')
+    args = parser.parse_args()
+    return (args.num_episodes, args.mode, args.path_to_weights)

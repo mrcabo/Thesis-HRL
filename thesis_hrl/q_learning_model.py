@@ -176,6 +176,8 @@ if __name__ == "__main__":
         # Update the target network, copying all weights and biases in DQN
         if i_episode % q_learning.TARGET_UPDATE == 0:
             q_learning.target_net.load_state_dict(q_learning.policy_net.state_dict())
+        if i_episode % 100 == 0:
+            plot_info(np.array(ep_rewards), 'Episode rewards', ('Episode', 'Reward'))
 
     plot_info(np.array(ep_rewards), 'Episode rewards', ('Episode', 'Reward'))
     cum_reward = [ep_rewards[0]]
