@@ -94,6 +94,6 @@ if __name__ == '__main__':
     elif mode == "test":
         test(num_episodes, env, q_learning, path_to_weights)
     else:
-        print(f"Only valid modes are 'train' or 'test'. User input was {mode}")
+        print(f"Only valid modes are 'train' or 'test'. User input was '{mode}'")
 
     env.close()
