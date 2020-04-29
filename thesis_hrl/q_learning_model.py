@@ -1,18 +1,13 @@
 import random
 import math
-from itertools import count
-from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
-import gym
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-from thesis_hrl.utils import ReplayMemory, Transition, normalize_values
-from household_env.envs.house_env import Tasks
+from thesis_hrl.utils import ReplayMemory, Transition
 
 
 class QNetwork(nn.Module):
@@ -42,6 +37,7 @@ class QLearning:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.policy_net = QNetwork(obs_space, action_space).to(self.device)
         self.target_net = QNetwork(obs_space, action_space).to(self.device)
+        print(f"Policy net:\n {self.policy_net}")
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()  # TODO: necesario aqui?
         self.optimizer = optim.RMSprop(self.policy_net.parameters())
