@@ -31,16 +31,18 @@ class QLearning:
         self.GAMMA = 0.999
         self.EPS_START = 0.9
         self.EPS_END = 0.05
-        self.EPS_DECAY = 2000
+        self.EPS_DECAY = 500
         self.TARGET_UPDATE = 10
         # Model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.policy_net = QNetwork(obs_space, action_space).to(self.device)
         self.target_net = QNetwork(obs_space, action_space).to(self.device)
-        print(f"Policy net:\n {self.policy_net}")
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()  # TODO: necesario aqui?
-        self.optimizer = optim.RMSprop(self.policy_net.parameters())
+        # self.optimizer = optim.RMSprop(self.policy_net.parameters())
+        # self.loss = nn.SmoothL1Loss()
+        self.optimizer = optim.Adam(self.policy_net.parameters())
+        self.loss = nn.MSELoss()
         self.memory = ReplayMemory(10000)
         # Others
         self.steps_done = 0
@@ -94,7 +96,7 @@ class QLearning:
         expected_state_action_values = (next_state_values * self.GAMMA) + reward_batch
 
         # Compute Huber loss
-        loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
+        loss = self.loss(state_action_values, expected_state_action_values.unsqueeze(1))
 
         # Optimize the model
         self.optimizer.zero_grad()
@@ -102,6 +104,17 @@ class QLearning:
         for param in self.policy_net.parameters():
             param.grad.data.clamp_(-1, 1)  # TODO: necessary?
         self.optimizer.step()
+
+    def print_hyperparam(self):
+        print(str("#" * 5 + "  HYPER-PARAMETERS  " + "#" * 5))
+        print(f"Batch size: {self.BATCH_SIZE}")
+        print(f"Gamma: {self.GAMMA}")
+        print(f"Epsilon start: {self.EPS_START}")
+        print(f"Epsilon end: {self.EPS_END}")
+        print(f"Epsilon decay: {self.EPS_DECAY}")
+        print(f"Target net update freq.: {self.TARGET_UPDATE}")
+        print(f"Network:\n {self.policy_net}")
+        print("#" * 30)
 
     def save_models(self, path):
         # Saves weights of the network to a file

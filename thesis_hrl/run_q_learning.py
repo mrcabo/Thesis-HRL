@@ -88,6 +88,7 @@ if __name__ == '__main__':
     env.set_current_task(tasks_list[0])
 
     q_learning = QLearning(env.observation_space.shape[0], env.action_space.n)
+    q_learning.print_hyperparam()
 
     if mode == "train":
         train(num_episodes, env, q_learning, path_to_weights)
