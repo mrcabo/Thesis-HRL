@@ -15,8 +15,7 @@ def train(num_episodes, env, model, path_to_weights):
     for i_episode in range(num_episodes):
         print(f"Episode {i_episode}")
         state = env.reset()
-        # state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
-        state = torch.tensor(state, dtype=torch.float, device=model.device)
+        state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
         ep_reward = 0
         for t in count():
             # env.render()
@@ -24,8 +23,7 @@ def train(num_episodes, env, model, path_to_weights):
             action = model.select_action(state)
             next_state, reward, done, _ = env.step(action.item())
             ep_reward += reward
-            # next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
-            next_state = torch.tensor(next_state, dtype=torch.float, device=model.device)
+            next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
 
@@ -35,8 +33,7 @@ def train(num_episodes, env, model, path_to_weights):
             # Perform one step of the optimization (on the target network)
             model.optimize_model()
             if done:
-                # if reward > 0:
-                if ep_reward > 100:
+                if reward > 0:
                     print(f"Success!! Ep. reward: {ep_reward}")
                 ep_rewards.append(ep_reward)
                 # plot_info(ep_rewards, 'Episode rewards', ('N. episode', 'Reward'))
@@ -46,6 +43,7 @@ def train(num_episodes, env, model, path_to_weights):
             model.target_net.load_state_dict(model.policy_net.state_dict())
         if i_episode % 100 == 0:
             plot_info(np.array(ep_rewards), 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
+            model.save_models(path_to_weights)
 
     plot_info(np.array(ep_rewards), 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
     cum_reward = [ep_rewards[0]]
@@ -85,12 +83,10 @@ if __name__ == '__main__':
     num_episodes, mode, path_to_weights = parse_arguments()
     path_to_weights = Path(path_to_weights) if path_to_weights != "" else Path.cwd()
 
-    # env = gym.make('household_env:Household-v0')
-    env = gym.make('CartPole-v0')
-    env.reset()
-
+    env = gym.make('household_env:Household-v0')
     tasks_list = [Tasks.TURN_ON_TV]
-    # env.set_current_task(tasks_list[0])
+    env.set_current_task(tasks_list[0])
+
     q_learning = QLearning(env.observation_space.shape[0], env.action_space.n)
 
     if mode == "train":
