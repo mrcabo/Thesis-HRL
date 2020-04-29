@@ -3,7 +3,7 @@
 #SBATCH --time=10:00:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:v100:1
-#SBATCH --mem=30GB
+#SBATCH --mem=20GB
 #SBATCH --output=Job-%j-q_learning.log
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=d.cabo.golvano@student.rug.nl
@@ -19,7 +19,8 @@ python -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install --upgrade setuptools
+pip install -e /home/s3736555/Household-env
 pip install -e .
 
 echo "Starting execution"
-python thesis_hrl/q_learning_model.py
+python thesis_hrl/run_q_learning.py --num_episodes 10000 --mode train --path_to_weights /home/s3736555/Thesis-HRL/thesis_hrl
