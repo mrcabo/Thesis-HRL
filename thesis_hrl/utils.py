@@ -46,5 +46,14 @@ def parse_arguments():
                         help='Number of episodes that will be run')
     parser.add_argument('--test', type=str, default=None,
                         help='Suffix of the weights that will be loaded during testing (default: train)')
+    parser.add_argument('--batch_size', type=int, default=128,
+                        help='Batch size')
+    parser.add_argument('--gamma', type=float, default=0.999,
+                        help='Gamma or discount factor')
+    parser.add_argument('--eps_decay', type=int, default=500,
+                        help='Epsilon decay')
+    parser.add_argument('--lr', type=float, default=1e-2,
+                        help='Learning rate')
     args = parser.parse_args()
-    return (args.num_episodes, args.test)
+    return (args.num_episodes, args.test, args.batch_size, args.gamma,
+            args.eps_decay, args.lr)

@@ -82,7 +82,7 @@ def test(num_episodes, env, model, path_to_output, weights_suffix):
 
 
 if __name__ == '__main__':
-    num_episodes, test_path = parse_arguments()
+    num_episodes, test_path, batch_size, gamma, eps_decay, lr = parse_arguments()
     path_to_output = Path.cwd().parent / 'results'
     # Make sure output exists
     if not path_to_output.exists():
@@ -92,7 +92,8 @@ if __name__ == '__main__':
     tasks_list = [Tasks.TURN_ON_TV]
     env.set_current_task(tasks_list[0])
 
-    q_learning = QLearning(env.observation_space.shape[0], env.action_space.n)
+    q_learning = QLearning(env.observation_space.shape[0], env.action_space.n,
+                           batch_size=batch_size, gamma=gamma, eps_decay=eps_decay, lr=lr)
     q_learning.print_hyperparam()
 
     if test_path:

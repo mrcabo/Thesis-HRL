@@ -25,15 +25,16 @@ class QNetwork(nn.Module):
 
 
 class QLearning:
-    def __init__(self, obs_space, action_space):
+    def __init__(self, obs_space, action_space, batch_size=128, gamma=0.999, eps_start=0.9, eps_end=0.05,
+                 eps_decay=500, target_update=10, lr=1e-2):
         # Hyper-parameters
-        self.BATCH_SIZE = 128
-        self.GAMMA = 0.999
-        self.EPS_START = 0.9
-        self.EPS_END = 0.05
-        self.EPS_DECAY = 500
-        self.TARGET_UPDATE = 10
-        self.LEARNING_RATE = 1e-2
+        self.BATCH_SIZE = batch_size
+        self.GAMMA = gamma
+        self.EPS_START = eps_start
+        self.EPS_END = eps_end
+        self.EPS_DECAY = eps_decay
+        self.TARGET_UPDATE = target_update
+        self.LEARNING_RATE = lr
         # Model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.policy_net = QNetwork(obs_space, action_space).to(self.device)
@@ -113,8 +114,15 @@ class QLearning:
         print(f"Epsilon end: {self.EPS_END}")
         print(f"Epsilon decay: {self.EPS_DECAY}")
         print(f"Target net update freq.: {self.TARGET_UPDATE}")
+        print(f"Learning rate.: {self.LEARNING_RATE}")
         print(f"Network:\n {self.policy_net}")
         print("#" * 30)
+
+    def set_hyperparam(self, **kwargs):
+        variables = vars(self)
+        for key, value in kwargs.items():
+            if key in variables:
+                variables[key] = value
 
     def get_param_suffix(self):
         s = (f"_{self.BATCH_SIZE}" + f"_{self.GAMMA}" + f"_{self.EPS_START}" +
