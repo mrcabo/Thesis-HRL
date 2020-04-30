@@ -10,7 +10,9 @@ from thesis_hrl.q_learning_model import plot_info, QLearning
 from household_env.envs.house_env import Tasks
 
 
-def train(num_episodes, env, model, path_to_weights):
+def train(num_episodes, env, model, path_to_output):
+    filename_ep_reward = path_to_output / ('Episode rewards' + model.get_param_suffix() + '.png')
+    filename_cum_reward = path_to_output / ('Cumulative rewards' + model.get_param_suffix() + '.png')
     ep_rewards = []
     for i_episode in range(num_episodes):
         print(f"Episode {i_episode}")
@@ -42,22 +44,22 @@ def train(num_episodes, env, model, path_to_weights):
         if i_episode % model.TARGET_UPDATE == 0:
             model.target_net.load_state_dict(model.policy_net.state_dict())
         if i_episode % 100 == 0:
-            plot_info(np.array(ep_rewards), 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
-            model.save_models(path_to_weights)
+            plot_info(np.array(ep_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
+            model.save_models(path_to_output)
 
-    plot_info(np.array(ep_rewards), 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
+    plot_info(np.array(ep_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
     cum_reward = [ep_rewards[0]]
     for val in ep_rewards[1:]:
         cum_reward.append(val + cum_reward[-1])
-    plot_info(cum_reward, 'Cumulative reward', ('Episode', 'Reward'), fig_num=2)
+    plot_info(cum_reward, filename_cum_reward, 'Cumulative reward', ('Episode', 'Reward'), fig_num=2)
 
     # Save model
-    model.save_models(path_to_weights)
+    model.save_models(path_to_output)
     print('Training complete')
 
 
-def test(num_episodes, env, model, path_to_weights):
-    model.load_models(path_to_weights)
+def test(num_episodes, env, model, path_to_output, weights_suffix):
+    model.load_models(path_to_output, weights_suffix)
     model.policy_net.eval()
     model.target_net.eval()
     env.render()
@@ -80,8 +82,11 @@ def test(num_episodes, env, model, path_to_weights):
 
 
 if __name__ == '__main__':
-    num_episodes, mode, path_to_weights = parse_arguments()
-    path_to_weights = Path(path_to_weights) if path_to_weights != "" else Path.cwd()
+    num_episodes, test_path = parse_arguments()
+    path_to_output = Path.cwd().parent / 'results'
+    # Make sure output exists
+    if not path_to_output.exists():
+        Path.mkdir(path_to_output, parents=True)
 
     env = gym.make('household_env:Household-v0')
     tasks_list = [Tasks.TURN_ON_TV]
@@ -90,11 +95,9 @@ if __name__ == '__main__':
     q_learning = QLearning(env.observation_space.shape[0], env.action_space.n)
     q_learning.print_hyperparam()
 
-    if mode == "train":
-        train(num_episodes, env, q_learning, path_to_weights)
-    elif mode == "test":
-        test(num_episodes, env, q_learning, path_to_weights)
+    if test_path:
+        test(num_episodes, env, q_learning, path_to_output, test_path)
     else:
-        print(f"Only valid modes are 'train' or 'test'. User input was '{mode}'")
+        train(num_episodes, env, q_learning, path_to_output)
 
     env.close()

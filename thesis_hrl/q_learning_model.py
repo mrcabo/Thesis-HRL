@@ -33,13 +33,14 @@ class QLearning:
         self.EPS_END = 0.05
         self.EPS_DECAY = 500
         self.TARGET_UPDATE = 10
+        self.LEARNING_RATE = 1e-2
         # Model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.policy_net = QNetwork(obs_space, action_space).to(self.device)
         self.target_net = QNetwork(obs_space, action_space).to(self.device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()  # TODO: necesario aqui?
-        self.optimizer = optim.RMSprop(self.policy_net.parameters())
+        self.optimizer = optim.RMSprop(self.policy_net.parameters(), lr=self.LEARNING_RATE)
         self.loss = nn.SmoothL1Loss()
         # self.loss = nn.MSELoss()
         self.memory = ReplayMemory(10000)
@@ -115,22 +116,28 @@ class QLearning:
         print(f"Network:\n {self.policy_net}")
         print("#" * 30)
 
+    def get_param_suffix(self):
+        s = (f"_{self.BATCH_SIZE}" + f"_{self.GAMMA}" + f"_{self.EPS_START}" +
+             f"_{self.EPS_END}" + f"_{self.EPS_DECAY}" + f"_{self.TARGET_UPDATE}" +
+             f"_{self.LEARNING_RATE}")
+        return s
+
     def save_models(self, path):
         # Saves weights of the network to a file
-        policy_path = path / 'policy_net.pt'
-        target_path = path / 'target_net.pt'
+        policy_path = path / ('policy_net' + self.get_param_suffix() + '.pt')
+        target_path = path / ('target_net' + self.get_param_suffix() + '.pt')
         torch.save(self.policy_net.state_dict(), policy_path)
         torch.save(self.target_net.state_dict(), target_path)
 
-    def load_models(self, path):
+    def load_models(self, path, w_suffix):
         # Loads weights of the network from a file
-        policy_path = path / 'policy_net.pt'
-        target_path = path / 'target_net.pt'
+        policy_path = path / ('policy_net_' + w_suffix + '.pt')
+        target_path = path / ('target_net_' + w_suffix + '.pt')
         self.policy_net.load_state_dict(torch.load(policy_path))
         self.target_net.load_state_dict(torch.load(target_path))
 
 
-def plot_info(data, title=None, labels=None, fig_num=None):
+def plot_info(data, path, title=None, labels=None, fig_num=None):
     plt.figure(fig_num)
     plt.clf()
     if title is not None:
@@ -140,4 +147,4 @@ def plot_info(data, title=None, labels=None, fig_num=None):
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
     plt.plot(data)
-    plt.savefig(title)
+    plt.savefig(path)
