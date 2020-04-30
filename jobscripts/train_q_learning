@@ -14,8 +14,8 @@ module load CUDA
 echo "Modules loaded"
 module list
 
-echo "Creating venv"
-python -m venv venv
+#echo "Creating venv"
+#python -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install --upgrade setuptools
