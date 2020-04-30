@@ -23,4 +23,6 @@ pip install -e /home/s3736555/Household-env
 pip install -e .
 
 echo "Starting execution"
-python thesis_hrl/run_q_learning.py --num_episodes 10000 --mode train --path_to_weights /home/s3736555/Thesis-HRL/thesis_hrl
+python thesis_hrl/run_q_learning.py --num_episodes 10000
+#python thesis_hrl/run_q_learning.py --num_episodes 20 --test 128_0.999_0.9_0.05_500_10_0.01
+
