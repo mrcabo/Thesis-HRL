@@ -39,10 +39,9 @@ class QLearning:
         self.target_net = QNetwork(obs_space, action_space).to(self.device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()  # TODO: necesario aqui?
-        # self.optimizer = optim.RMSprop(self.policy_net.parameters())
-        # self.loss = nn.SmoothL1Loss()
-        self.optimizer = optim.Adam(self.policy_net.parameters())
-        self.loss = nn.MSELoss()
+        self.optimizer = optim.RMSprop(self.policy_net.parameters())
+        self.loss = nn.SmoothL1Loss()
+        # self.loss = nn.MSELoss()
         self.memory = ReplayMemory(10000)
         # Others
         self.steps_done = 0
