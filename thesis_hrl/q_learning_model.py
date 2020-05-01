@@ -77,6 +77,7 @@ class QLearning:
         # (a final state would've been the one after which simulation ended)
         non_final_mask = torch.tensor(tuple(map(lambda s: not s,
                                                 batch.done)), device=self.device, dtype=torch.bool)
+        # TODO:This line below can return an empty tensor and crashes (happened for batch_size=4)
         non_final_next_states = torch.cat([s for (s, d) in zip(batch.next_state, batch.done) if not d])
         state_batch = torch.cat(batch.state)
         action_batch = torch.cat(batch.action)
