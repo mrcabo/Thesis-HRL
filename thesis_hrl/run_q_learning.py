@@ -1,3 +1,4 @@
+import time
 from itertools import count
 from pathlib import Path
 
@@ -65,19 +66,21 @@ def test(num_episodes, env, model, path_to_output, weights_suffix):
     env.render()
     for _ in range(num_episodes):
         state = env.reset()
-        state = torch.tensor(state, dtype=torch.float, device=model.device)
+        state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
         ep_reward = 0
         for t in count():
             with torch.no_grad():
-                action = model.policy_net(state).argmax().view(1, 1)
+                action = model.policy_net(state.unsqueeze(0)).argmax().view(1, 1)
+                print(f"Action taken {action}")
             next_state, reward, done, _ = env.step(action.item())
             ep_reward += reward
-            next_state = torch.tensor(next_state, dtype=torch.float, device=model.device)
+            next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
             state = next_state
             env.render()
             if done:
                 print(f"Episode reward: {ep_reward}")
                 break
+            time.sleep(0.5)
     print('Testing complete')
 
 
