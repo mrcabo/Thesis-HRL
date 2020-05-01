@@ -13,15 +13,17 @@ from thesis_hrl.utils import ReplayMemory, Transition
 class QNetwork(nn.Module):
     def __init__(self, state_size, action_size):
         super(QNetwork, self).__init__()
-        self.fc1 = nn.Linear(state_size, 50)
-        self.fc2 = nn.Linear(50, 25)
-        self.head = nn.Linear(25, action_size)
+        self.fc = nn.Sequential(
+            nn.Linear(state_size, 50),
+            nn.ReLU(),
+            nn.Linear(50, 25),
+            nn.ReLU(),
+            nn.Linear(25, action_size)
+        )
 
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.head(x)
-        return x
+        qval = self.fc(x)
+        return qval
 
 
 class QLearning:

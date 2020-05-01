@@ -16,14 +16,15 @@ def train(num_episodes, env, model, path_to_output):
     filename_cum_reward = path_to_output / ('Cumulative rewards' + model.get_param_suffix() + '.png')
     ep_rewards = []
     for i_episode in range(num_episodes):
-        print(f"Episode {i_episode}")
         state = env.reset()
         state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
         ep_reward = 0
+        debug_actions = []
         for t in count():
             # env.render()
             # Select action and execute it
             action = model.select_action(state)
+            debug_actions.append(action.item())
             next_state, reward, done, _ = env.step(action.item())
             ep_reward += reward
             next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
@@ -38,6 +39,7 @@ def train(num_episodes, env, model, path_to_output):
             if done:
                 if reward > 0:
                     print(f"Success!! Ep. reward: {ep_reward}")
+                    print(f"Number of steps: {t}, actions taken: {debug_actions}")
                 ep_rewards.append(ep_reward)
                 # plot_info(ep_rewards, 'Episode rewards', ('N. episode', 'Reward'))
                 break
@@ -45,6 +47,7 @@ def train(num_episodes, env, model, path_to_output):
         if i_episode % model.TARGET_UPDATE == 0:
             model.target_net.load_state_dict(model.policy_net.state_dict())
         if i_episode % 100 == 0:
+            print(f"Episode {i_episode}")
             plot_info(np.array(ep_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
             model.save_models(path_to_output)
 
