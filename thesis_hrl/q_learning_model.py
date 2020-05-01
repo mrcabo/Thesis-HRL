@@ -42,8 +42,7 @@ class QLearning:
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()  # TODO: necesario aqui?
         self.optimizer = optim.RMSprop(self.policy_net.parameters(), lr=self.LEARNING_RATE)
-        self.loss = nn.SmoothL1Loss()
-        # self.loss = nn.MSELoss()
+        self.loss = nn.MSELoss()
         self.memory = ReplayMemory(10000)
         # Others
         self.steps_done = 0
