@@ -50,7 +50,7 @@ def parse_arguments():
                         help='Batch size')
     parser.add_argument('--gamma', type=float, default=0.999,
                         help='Gamma or discount factor')
-    parser.add_argument('--eps_decay', type=int, default=500,
+    parser.add_argument('--eps_decay', type=float, default=500,
                         help='Epsilon decay')
     parser.add_argument('--lr', type=float, default=1e-2,
                         help='Learning rate')

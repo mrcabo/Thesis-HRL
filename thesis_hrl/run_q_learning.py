@@ -21,7 +21,8 @@ def train(num_episodes, env, model, path_to_output):
         ep_reward = 0
         debug_actions = []
         for t in count():
-            # env.render()
+            # if i_episode % 100 == 0:
+            #     env.render()
             # Select action and execute it
             action = model.select_action(state)
             debug_actions.append(action.item())
@@ -37,7 +38,7 @@ def train(num_episodes, env, model, path_to_output):
             # Perform one step of the optimization (on the target network)
             model.optimize_model()
             if done:
-                if reward > 0:
+                if ep_reward > 280:
                     print(f"Success!! Ep. reward: {ep_reward}")
                     print(f"Number of steps: {t}, actions taken: {debug_actions}")
                 ep_rewards.append(ep_reward)

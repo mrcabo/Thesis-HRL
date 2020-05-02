@@ -28,7 +28,7 @@ class QNetwork(nn.Module):
 
 class QLearning:
     def __init__(self, obs_space, action_space, batch_size=128, gamma=0.999, eps_start=0.9, eps_end=0.05,
-                 eps_decay=500, target_update=10, lr=1e-2):
+                 eps_decay=500., target_update=10, lr=1e-2):
         # Hyper-parameters
         self.BATCH_SIZE = batch_size
         self.GAMMA = gamma
