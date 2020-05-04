@@ -50,6 +50,10 @@ def train(num_episodes, env, model, path_to_output):
         if i_episode % 100 == 0:
             print(f"Episode {i_episode}")
             plot_info(np.array(ep_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
+            cum_reward = [ep_rewards[0]]
+            for val in ep_rewards[1:]:
+                cum_reward.append(val + cum_reward[-1])
+            plot_info(cum_reward, filename_cum_reward, 'Cumulative reward', ('Episode', 'Reward'), fig_num=2)
             model.save_models(path_to_output)
 
     plot_info(np.array(ep_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)

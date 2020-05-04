@@ -14,11 +14,11 @@ class QNetwork(nn.Module):
     def __init__(self, state_size, action_size):
         super(QNetwork, self).__init__()
         self.fc = nn.Sequential(
-            nn.Linear(state_size, 50),
+            nn.Linear(state_size, 1500),
             nn.ReLU(),
-            nn.Linear(50, 25),
+            nn.Linear(1500, 500),
             nn.ReLU(),
-            nn.Linear(25, action_size)
+            nn.Linear(500, action_size)
         )
 
     def forward(self, x):
@@ -43,6 +43,7 @@ class QLearning:
         self.target_net = QNetwork(obs_space, action_space).to(self.device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()  # TODO: necesario aqui?
+        # self.optimizer = optim.Adam(self.policy_net.parameters())
         self.optimizer = optim.RMSprop(self.policy_net.parameters(), lr=self.LEARNING_RATE)
         self.loss = nn.MSELoss()
         self.memory = ReplayMemory(10000)
@@ -55,7 +56,7 @@ class QLearning:
         sample = random.random()
         eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
                         math.exp(-1. * self.steps_done / self.EPS_DECAY)
-        if self.steps_done % 500 == 0:
+        if self.steps_done % 500 == 0 and eps_threshold > 0.6:
             print(f"Epsilon threshold: {eps_threshold}")
         self.steps_done += 1
         if sample > eps_threshold:
