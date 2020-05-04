@@ -31,7 +31,8 @@ class ReplayMemory(object):
 
 
 def normalize_values(state, inv=False):
-    NORM_VEC = [19., 19., 1., 1., 1., 1., 1., 8., 8., 8., 8.]
+    # NORM_VEC = [19., 19., 1., 1., 1., 1., 1., 8., 8., 8., 8.]
+    NORM_VEC = [19., 19.]
     device = state.device
     norm_vec = torch.tensor(NORM_VEC, device=device)
     if inv:
@@ -52,8 +53,10 @@ def parse_arguments():
                         help='Gamma or discount factor')
     parser.add_argument('--eps_decay', type=float, default=500,
                         help='Epsilon decay')
+    parser.add_argument('--target_update', type=float, default=100,
+                        help='Target net update freq.')
     parser.add_argument('--lr', type=float, default=1e-2,
                         help='Learning rate')
     args = parser.parse_args()
     return (args.num_episodes, args.test, args.batch_size, args.gamma,
-            args.eps_decay, args.lr)
+            args.eps_decay, args.target_update, args.lr)

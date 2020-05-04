@@ -35,7 +35,7 @@ class QLearning:
         self.EPS_START = eps_start
         self.EPS_END = eps_end
         self.EPS_DECAY = eps_decay
-        self.TARGET_UPDATE = target_update
+        self.TARGET_UPDATE = int(target_update)
         self.LEARNING_RATE = lr
         # Model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -61,7 +61,7 @@ class QLearning:
         self.steps_done += 1
         if sample > eps_threshold:
             with torch.no_grad():
-                return self.policy_net(state).argmax().view(1, 1)
+                return self.policy_net(state).max(0)[1].view(1, 1)
         else:
             return torch.tensor([[random.randrange(self.action_space)]], device=self.device, dtype=torch.long)
 
@@ -105,8 +105,8 @@ class QLearning:
         # Optimize the model
         self.optimizer.zero_grad()
         loss.backward()
-        for param in self.policy_net.parameters():
-            param.grad.data.clamp_(-1, 1)  # TODO: necessary?
+        # for param in self.policy_net.parameters():
+        #     param.grad.data.clamp_(-1, 1)  # TODO: necessary?
         self.optimizer.step()
 
     def print_hyperparam(self):

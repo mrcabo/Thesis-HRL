@@ -38,8 +38,8 @@ def train(num_episodes, env, model, path_to_output):
             # Perform one step of the optimization (on the target network)
             model.optimize_model()
             if done:
-                if ep_reward > 280:
-                    print(f"Success!! Ep. reward: {ep_reward}")
+                if ep_reward > 0:
+                    print(f"Success in ep. {i_episode}!! Ep. reward: {ep_reward}")
                     print(f"Number of steps: {t}, actions taken: {debug_actions}")
                 ep_rewards.append(ep_reward)
                 # plot_info(ep_rewards, 'Episode rewards', ('N. episode', 'Reward'))
@@ -72,29 +72,29 @@ def test(num_episodes, env, model, path_to_output, weights_suffix):
     model.policy_net.eval()
     model.target_net.eval()
     env.render()
-    for _ in range(num_episodes):
-        state = env.reset()
-        state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
-        ep_reward = 0
-        for t in count():
-            with torch.no_grad():
-                action = model.policy_net(state.unsqueeze(0)).argmax().view(1, 1)
-                print(f"Action taken {action}")
-            next_state, reward, done, _ = env.step(action.item())
-            ep_reward += reward
-            next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
-            state = next_state
-            env.render()
-            if done:
-                print(f"Episode reward: {ep_reward}")
-                break
-            time.sleep(0.5)
+    with torch.no_grad():
+        for _ in range(num_episodes):
+            state = env.reset()
+            state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
+            ep_reward = 0
+            for t in count():
+                action = model.policy_net(state.unsqueeze(0)).max(1)[1].view(1, 1)
+                # print(f"Action taken {action}")
+                next_state, reward, done, _ = env.step(action.item())
+                ep_reward += reward
+                next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
+                state = next_state
+                env.render()
+                if done:
+                    print(f"Episode reward: {ep_reward}")
+                    break
+                # time.sleep(0.1)
     print('Testing complete')
 
 
 if __name__ == '__main__':
-    num_episodes, test_path, batch_size, gamma, eps_decay, lr = parse_arguments()
-    path_to_output = Path.cwd().parent / 'results'
+    num_episodes, test_path, batch_size, gamma, eps_decay, target_update, lr = parse_arguments()
+    path_to_output = Path.cwd() / 'results'
     # Make sure output exists
     if not path_to_output.exists():
         Path.mkdir(path_to_output, parents=True)
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     env.set_current_task(tasks_list[0])
 
     q_learning = QLearning(env.observation_space.shape[0], env.action_space.n,
-                           batch_size=batch_size, gamma=gamma, eps_decay=eps_decay, lr=lr)
+                           batch_size=batch_size, gamma=gamma, eps_decay=eps_decay, target_update=target_update, lr=lr)
     q_learning.print_hyperparam()
 
     if test_path:
