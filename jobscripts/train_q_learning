@@ -23,6 +23,4 @@ pip install -e /home/s3736555/Household-env
 pip install -e .
 
 echo "Starting execution"
-python thesis_hrl/run_q_learning.py --num_episodes 10000 --batch_size 128 --lr 1e-2 --eps_decay 500
-#python thesis_hrl/run_q_learning.py --num_episodes 20 --test 128_0.999_0.9_0.05_500_10_0.01
-
+python thesis_hrl/run_q_learning.py --num_episodes 20000 --batch_size 32 --eps_decay 4e4 --target_update 1e2 --lr 1e-4
