@@ -14,7 +14,9 @@ from household_env.envs.house_env import Tasks
 def train(num_episodes, env, model, path_to_output):
     filename_ep_reward = path_to_output / ('Episode rewards' + model.get_param_suffix() + '.png')
     filename_cum_reward = path_to_output / ('Cumulative rewards' + model.get_param_suffix() + '.png')
+    filename_avg_reward = path_to_output / ('Average rewards' + model.get_param_suffix() + '.png')
     ep_rewards = []
+    avg_rewards = []
     for i_episode in range(num_episodes):
         state = env.reset()
         state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
@@ -42,6 +44,7 @@ def train(num_episodes, env, model, path_to_output):
                     print(f"Success in ep. {i_episode}!! Ep. reward: {ep_reward}")
                     print(f"Number of steps: {t}, actions taken: {debug_actions}")
                 ep_rewards.append(ep_reward)
+                avg_rewards.append(np.mean(ep_rewards[-100:]))
                 # plot_info(ep_rewards, 'Episode rewards', ('N. episode', 'Reward'))
                 break
         # Update the target network, copying all weights and biases in DQN
@@ -50,10 +53,13 @@ def train(num_episodes, env, model, path_to_output):
         if i_episode % 100 == 0:
             print(f"Episode {i_episode}")
             plot_info(np.array(ep_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
+            # Cumulative reward
             cum_reward = [ep_rewards[0]]
             for val in ep_rewards[1:]:
                 cum_reward.append(val + cum_reward[-1])
             plot_info(cum_reward, filename_cum_reward, 'Cumulative reward', ('Episode', 'Reward'), fig_num=2)
+            # Avg. reward over the last 100 episodes
+            plot_info(avg_rewards, filename_avg_reward, 'Average rewards', ('Episode', 'Reward'), fig_num=3)
             model.save_models(path_to_output)
 
     plot_info(np.array(ep_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
