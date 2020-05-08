@@ -99,7 +99,7 @@ def test(num_episodes, env, model, path_to_output, weights_suffix):
 
 
 if __name__ == '__main__':
-    num_episodes, test_path, batch_size, gamma, eps_decay, target_update, lr = parse_arguments()
+    num_episodes, test_path, batch_size, gamma, eps_decay, eps_end, target_update, lr = parse_arguments()
     path_to_output = Path.cwd() / 'results'
     # Make sure output exists
     if not path_to_output.exists():

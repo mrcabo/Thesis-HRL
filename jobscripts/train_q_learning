@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --time=10:00:00
+#SBATCH --time=23:55:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:v100:1
 #SBATCH --mem=20GB
@@ -14,13 +14,26 @@ module load CUDA
 echo "Modules loaded"
 module list
 
-#echo "Creating venv"
-#python -m venv venv
+# echo "Creating venv"
+# python -m venv venv
 source venv/bin/activate
-pip install --upgrade pip
-pip install --upgrade setuptools
-pip install -e /home/s3736555/Household-env
-pip install -e .
+# pip install --upgrade pip
+# pip install --upgrade setuptools
+# pip install -e /home/s3736555/Household-env
+# pip install -e .
 
 echo "Starting execution"
-python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 1e5 --target_update 1e4 --lr 1e-4
+
+python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 45e3 --target_update 3e4 --lr 1e-4 --eps_end 0.1
+python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 5e4 --target_update 1e4 --lr 1e-4 --eps_end 0.1
+python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 1e5 --target_update 1e4 --lr 1e-4 --eps_end 0.1
+python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 1e5 --target_update 1e4 --lr 1e-3 --eps_end 0.1
+python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 1e5 --target_update 6e3 --lr 1e-4 --eps_end 0.1
+
+# OLD ones
+
+#python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 32 --eps_decay 45e3 --target_update 3e4 --lr 1e-4
+#python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 32 --eps_decay 45e3 --target_update 3e4 --lr 1e-5
+#python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 1e5 --target_update 6e3 --lr 1e-4
+#python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 3e5 --target_update 1e5 --lr 1e-3
+#python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 3e5 --target_update 1e5 --lr 1e-4
