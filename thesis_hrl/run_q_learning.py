@@ -110,7 +110,8 @@ if __name__ == '__main__':
     env.set_current_task(tasks_list[0])
 
     q_learning = QLearning(env.observation_space.shape[0], env.action_space.n,
-                           batch_size=batch_size, gamma=gamma, eps_decay=eps_decay, target_update=target_update, lr=lr)
+                           batch_size=batch_size, gamma=gamma, eps_end=eps_end, eps_decay=eps_decay,
+                           target_update=target_update, lr=lr)
     q_learning.print_hyperparam()
 
     if test_path:
