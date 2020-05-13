@@ -37,6 +37,7 @@ class QLearning:
         self.EPS_DECAY = eps_decay
         self.TARGET_UPDATE = int(target_update)
         self.LEARNING_RATE = lr
+        self.ER_LENGTH = int(memory)
         # Model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.policy_net = QNetwork(obs_space, action_space).to(self.device)
@@ -46,7 +47,7 @@ class QLearning:
         # self.optimizer = optim.Adam(self.policy_net.parameters())
         self.optimizer = optim.RMSprop(self.policy_net.parameters(), lr=self.LEARNING_RATE)
         self.loss = nn.MSELoss()
-        self.memory = ReplayMemory(memory)
+        self.memory = ReplayMemory(self.ER_LENGTH)
         # Others
         self.steps_done = 0
         self.obs_space = obs_space
@@ -118,6 +119,7 @@ class QLearning:
         print(f"Epsilon decay: {self.EPS_DECAY}")
         print(f"Target net update freq.: {self.TARGET_UPDATE}")
         print(f"Learning rate.: {self.LEARNING_RATE}")
+        print(f"Experience replay length.: {self.ER_LENGTH}")
         print(f"Network:\n {self.policy_net}")
         print("#" * 30)
 
