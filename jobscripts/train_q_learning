@@ -24,16 +24,19 @@ source venv/bin/activate
 
 echo "Starting execution"
 
-python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 8e4 --target_update 5e3 --lr 1e-4 --eps_end 0.1
-python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 8e4 --target_update 2e3 --lr 1e-5 --eps_end 0.1
-python thesis_hrl/run_q_learning.py --num_episodes 200000 --batch_size 16 --eps_decay 1e5 --target_update 1e4 --lr 1e-4 --eps_end 0.1
-python thesis_hrl/run_q_learning.py --num_episodes 200000 --batch_size 16 --eps_decay 1e5 --target_update 1e4 --lr 3e-4 --eps_end 0.1
-python thesis_hrl/run_q_learning.py --num_episodes 200000 --batch_size 32 --eps_decay 1e5 --target_update 1e4 --lr 1e-4 --eps_end 0.1
-python thesis_hrl/run_q_learning.py --num_episodes 200000 --batch_size 32 --eps_decay 1e5 --target_update 1e4 --lr 3e-4 --eps_end 0.1
-python thesis_hrl/run_q_learning.py --num_episodes 200000 --batch_size 64 --eps_decay 5e4 --target_update 1e4 --lr 1e-4 --eps_end 0.1
-
+python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 16 --eps_decay 45e3 --target_update 3e4 --lr 1e-4 --eps_end 0.1 --gamma 0.999
+python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 16 --eps_decay 6e4 --target_update 3e4 --lr 1e-4 --eps_end 0.05 --gamma 0.9
+python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 16 --eps_decay 1e5 --target_update 3e4 --lr 1e-4 --eps_end 0.05 --gamma 0.99
+python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 16 --eps_decay 6e4 --target_update 1e4 --lr 1e-4 --eps_end 0.05 --gamma 0.99
 
 # OLD ones
+#python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 8e4 --target_update 5e3 --lr 1e-4 --eps_end 0.1
+#python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 8e4 --target_update 2e3 --lr 1e-5 --eps_end 0.1
+#python thesis_hrl/run_q_learning.py --num_episodes 200000 --batch_size 16 --eps_decay 1e5 --target_update 1e4 --lr 1e-4 --eps_end 0.1
+#python thesis_hrl/run_q_learning.py --num_episodes 200000 --batch_size 16 --eps_decay 1e5 --target_update 1e4 --lr 3e-4 --eps_end 0.1
+#python thesis_hrl/run_q_learning.py --num_episodes 200000 --batch_size 32 --eps_decay 1e5 --target_update 1e4 --lr 1e-4 --eps_end 0.1
+#python thesis_hrl/run_q_learning.py --num_episodes 200000 --batch_size 32 --eps_decay 1e5 --target_update 1e4 --lr 3e-4 --eps_end 0.1
+#python thesis_hrl/run_q_learning.py --num_episodes 200000 --batch_size 64 --eps_decay 5e4 --target_update 1e4 --lr 1e-4 --eps_end 0.1
 # python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 45e3 --target_update 3e4 --lr 1e-4 --eps_end 0.1
 # python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 5e4 --target_update 1e4 --lr 1e-4 --eps_end 0.1
 # python thesis_hrl/run_q_learning.py --num_episodes 100000 --batch_size 16 --eps_decay 1e5 --target_update 1e4 --lr 1e-4 --eps_end 0.1
