@@ -52,6 +52,8 @@ def parse_arguments():
                         help='Gamma or discount factor')
     parser.add_argument('--eps_decay', type=float, default=500,
                         help='Epsilon decay')
+    parser.add_argument('--eps_start', type=float, default=0.9,
+                        help='Epsilon starting value')
     parser.add_argument('--eps_end', type=float, default=0.05,
                         help='Epsilon final value')
     parser.add_argument('--target_update', type=float, default=100,
@@ -61,5 +63,5 @@ def parse_arguments():
     parser.add_argument('--memory', type=float, default=1e4,
                         help='Experience replay length')
     args = parser.parse_args()
-    return (args.num_episodes, args.test, args.batch_size, args.gamma,
-            args.eps_decay, args.eps_end, args.target_update, args.lr, args.memory)
+    return (args.num_episodes, args.test, args.batch_size, args.gamma, args.eps_decay, args.eps_start, args.eps_end,
+            args.target_update, args.lr, args.memory)
