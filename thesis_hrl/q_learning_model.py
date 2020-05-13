@@ -28,7 +28,7 @@ class QNetwork(nn.Module):
 
 class QLearning:
     def __init__(self, obs_space, action_space, batch_size=32, gamma=0.999, eps_start=0.9, eps_end=0.05,
-                 eps_decay=4e4, target_update=1e2, lr=1e-4):
+                 eps_decay=4e4, target_update=1e2, lr=1e-4, memory=10000):
         # Hyper-parameters
         self.BATCH_SIZE = batch_size
         self.GAMMA = gamma
@@ -46,7 +46,7 @@ class QLearning:
         # self.optimizer = optim.Adam(self.policy_net.parameters())
         self.optimizer = optim.RMSprop(self.policy_net.parameters(), lr=self.LEARNING_RATE)
         self.loss = nn.MSELoss()
-        self.memory = ReplayMemory(10000)
+        self.memory = ReplayMemory(memory)
         # Others
         self.steps_done = 0
         self.obs_space = obs_space

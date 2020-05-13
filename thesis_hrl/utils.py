@@ -58,6 +58,8 @@ def parse_arguments():
                         help='Target net update freq.')
     parser.add_argument('--lr', type=float, default=1e-2,
                         help='Learning rate')
+    parser.add_argument('--memory', type=float, default=1e4,
+                        help='Experience replay length')
     args = parser.parse_args()
     return (args.num_episodes, args.test, args.batch_size, args.gamma,
-            args.eps_decay, args.eps_end, args.target_update, args.lr)
+            args.eps_decay, args.eps_end, args.target_update, args.lr, args.memory)

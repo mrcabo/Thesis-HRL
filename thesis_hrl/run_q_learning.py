@@ -99,7 +99,7 @@ def test(num_episodes, env, model, path_to_output, weights_suffix):
 
 
 if __name__ == '__main__':
-    num_episodes, test_path, batch_size, gamma, eps_decay, eps_end, target_update, lr = parse_arguments()
+    num_episodes, test_path, batch_size, gamma, eps_decay, eps_end, target_update, lr, memory = parse_arguments()
     path_to_output = Path.cwd() / 'results'
     # Make sure output exists
     if not path_to_output.exists():
@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
     q_learning = QLearning(env.observation_space.shape[0], env.action_space.n,
                            batch_size=batch_size, gamma=gamma, eps_end=eps_end, eps_decay=eps_decay,
-                           target_update=target_update, lr=lr)
+                           target_update=target_update, lr=lr, memory=memory)
     q_learning.print_hyperparam()
 
     if test_path:
