@@ -24,9 +24,11 @@ source venv/bin/activate
 
 echo "Starting execution"
 
-python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 32 --eps_decay 4e4 --target_update 1e4 --lr 0.00025 --eps_start 1 --eps_end 0.1 --gamma 0.99 --memory 1000000
-
-python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 16 --eps_decay 5e4 --target_update 6e3 --lr 1e-4 --eps_start 1 --eps_end 0.05 --gamma 0.99 --memory 100000
+#OG #python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 32 --eps_decay 2e5 --target_update 1e4 --lr 0.00025 --eps_start 1 --eps_end 0.1 --gamma 0.99 --memory 1000000
+python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 16 --eps_decay 2e5 --target_update 1e4 --lr 0.00025 --eps_start 1 --eps_end 0.1 --gamma 0.99 --memory 1000000
+python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 32 --eps_decay 2e5 --target_update 1e4 --lr 1e-4 --eps_start 1 --eps_end 0.1 --gamma 0.99 --memory 1000000
+python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 32 --eps_decay 5e4 --target_update 1e4 --lr 0.00025 --eps_start 1 --eps_end 0.1 --gamma 0.99 --memory 1000000
+python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 16 --eps_decay 2e5 --target_update 5e3 --lr 0.00025 --eps_start 1 --eps_end 0.1 --gamma 0.99 --memory 1000000
 
 # OLD ones
 # python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 8 --eps_decay 45e3 --target_update 3e4 --lr 1e-4 --eps_end 0.05 --gamma 0.999
