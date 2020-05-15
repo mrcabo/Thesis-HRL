@@ -47,9 +47,10 @@ def train(num_episodes, env, model, path_to_output):
                 avg_rewards.append(np.mean(ep_rewards[-100:]))
                 # plot_info(ep_rewards, 'Episode rewards', ('N. episode', 'Reward'))
                 break
-        # Update the target network, copying all weights and biases in DQN
-        if i_episode % model.TARGET_UPDATE == 0:
-            model.target_net.load_state_dict(model.policy_net.state_dict())
+            # Update the target network, copying all weights and biases in DQN
+            if model.steps_done % model.TARGET_UPDATE == 0:
+                model.target_net.load_state_dict(model.policy_net.state_dict())
+
         if i_episode % 100 == 0:
             print(f"Episode {i_episode}")
             plot_info(np.array(ep_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
