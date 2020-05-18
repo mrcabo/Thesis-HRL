@@ -108,7 +108,7 @@ if __name__ == '__main__':
         Path.mkdir(path_to_output, parents=True)
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.TURN_ON_TV]
+    tasks_list = [Tasks.MAKE_BED]
     env.set_current_task(tasks_list[0])
 
     q_learning = QLearning(env.observation_space.shape[0], env.action_space.n,
