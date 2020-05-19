@@ -68,6 +68,7 @@ def train(num_episodes, env, model, path_to_output):
     for val in ep_rewards[1:]:
         cum_reward.append(val + cum_reward[-1])
     plot_info(cum_reward, filename_cum_reward, 'Cumulative reward', ('Episode', 'Reward'), fig_num=2)
+    print(f"Cumulative reward: {cum_reward[-1]}")
 
     # Save model
     model.save_models(path_to_output)
