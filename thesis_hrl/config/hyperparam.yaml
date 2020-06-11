@@ -1,0 +1,17 @@
+batch_size: 32
+gamma: 0.99
+eps_start: 1.0
+eps_end: 0.1
+eps_decay: 2.e+5
+target_update: 1.e+4
+master_lr: 0.00025
+sub_lr: 0.00025
+master_ER: 1000000
+master_hidden_size: !!python/tuple
+  - 1500
+  - 500
+n_sub_policies: 3
+sub_ER: 1000000
+sub_hidden_size: !!python/tuple
+  - 1500
+  - 500
