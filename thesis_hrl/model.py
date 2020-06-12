@@ -45,22 +45,47 @@ class MLP(nn.Module):
 
 class Policy:
     def __init__(self, obs_space, action_space, device, **kwargs):
+        # Net
         self.policy_net = MLP(obs_space, action_space, **kwargs).to(device)
         self.target_net = MLP(obs_space, action_space, **kwargs).to(device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
         self.optimizer = optim.RMSprop(self.policy_net.parameters(), lr=kwargs.get('lr'))
+        # Others
+        self.steps_done = 0
+        self.obs_space = obs_space
+        self.action_space = action_space
+        self.EPS_START = kwargs.get('eps_start', 1)
+        self.EPS_END = kwargs.get('eps_end', 0.1)
+        self.EPS_DECAY = kwargs.get('eps_decay', 2e5)
 
     def reset(self):
         self.policy_net.apply(reset_weights)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
+        self.steps_done = 0
 
-    def select_action(self):
-        pass
+    def select_action(self, state):
+        sample = random.random()
+        eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
+                        math.exp(-1. * self.steps_done / self.EPS_DECAY)
+        if self.steps_done % 500 == 0 and eps_threshold > 0.2:
+            print(f"Epsilon threshold: {eps_threshold}")
+        self.steps_done += 1
+        if sample > eps_threshold:
+            with torch.no_grad():
+                return self.policy_net(state).max(0)[1].view(1, 1)
+        else:
+            return torch.tensor([[random.randrange(self.action_space)]], device=self.device, dtype=torch.long)
 
     def optimize_model(self):
         pass
+
+    def print_hyperparam(self):
+        print(f"Epsilon start: {self.EPS_START}")
+        print(f"Epsilon end: {self.EPS_END}")
+        print(f"Epsilon decay: {self.EPS_DECAY}")
+        print(f"Network:\n {self.policy_net}")
 
 
 class HRLDQN:
@@ -68,41 +93,100 @@ class HRLDQN:
         # Hyper-parameters
         self.BATCH_SIZE = kwargs.get('batch_size', 32)
         self.GAMMA = kwargs.get('gamma', 0.99)
-        self.EPS_START = kwargs.get('eps_start', 1)
-        self.EPS_END = kwargs.get('eps_end', 0.1)
-        self.EPS_DECAY = kwargs.get('eps_decay', 2e5)
         self.TARGET_UPDATE = int(kwargs.get('target_update', 1e4))
-        self.LEARNING_RATE = kwargs.get('lr', 0.00025)
+        self.M_LEARNING_RATE = kwargs.get('master_lr', 0.00025)
+        self.S_LEARNING_RATE = kwargs.get('sub_lr', 0.00025)
         self.MASTER_ER_LENGTH = int(kwargs.get('master_ER', 1000000))
         self.SUB_ER_LENGTH = int(kwargs.get('sub_ER', 1000000))
         # Model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.master_policy = Policy(obs_space, action_space, self.device,
+        master_actions = kwargs.get('n_sub_policies', 3)
+        self.master_policy = Policy(obs_space, master_actions, self.device,
+                                    lr=kwargs.get('lr', 0.005),
                                     hidden_size=kwargs.get('master_hidden_size', (1500, 500)),
-                                    lr=self.LEARNING_RATE)
+                                    **kwargs)
         self.sub_policies = [Policy(obs_space, action_space, self.device,
+                                    lr=kwargs.get('lr', 0.00025),
                                     hidden_size=kwargs.get('sub_hidden_size', (1500, 500)),
-                                    lr=self.LEARNING_RATE) for _ in range(kwargs.get('n_sub_policies', 3))]
+                                    **kwargs) for _ in range(kwargs.get('n_sub_policies', 3))]
         self.loss = nn.MSELoss()
         self.master_ER = ReplayMemory(self.MASTER_ER_LENGTH)
         self.sub_ER = ReplayMemory(self.SUB_ER_LENGTH)
         # Others
-        self.steps_done = 0
         self.obs_space = obs_space
         self.action_space = action_space
 
-    def print_hyperparam(self):
-        print(str("#" * 5 + "  HYPER-PARAMETERS  " + "#" * 5))
+    def print_model(self):
+        print("#" * 5 + "  MODEL DESCRIPTION  " + "#" * 5)
+        # General ones
+        print("*" * 3 + "  Shared values  " + "*" * 3)
         print(f"Batch size: {self.BATCH_SIZE}")
         print(f"Gamma: {self.GAMMA}")
-        print(f"Epsilon start: {self.EPS_START}")
-        print(f"Epsilon end: {self.EPS_END}")
-        print(f"Epsilon decay: {self.EPS_DECAY}")
         print(f"Target net update freq.: {self.TARGET_UPDATE}")
-        print(f"Learning rate.: {self.LEARNING_RATE}")
-        print(f"Experience replay length.: {self.ER_LENGTH}")
-        print(f"Network:\n {self.policy_net}")
-        print("#" * 30)
+
+        # Master policy
+        print("*" * 3 + "  Master policy  " + "*" * 3)
+        print(f"ER length.: {self.MASTER_ER_LENGTH}")
+        print(f"Learning rate.: {self.M_LEARNING_RATE}")
+        self.master_policy.print_hyperparam()
+
+        # Sub-policies
+        print("*" * 3 + "  Sub policies  " + "*" * 3)
+        print(f"ER length.: {self.SUB_ER_LENGTH}")
+        print(f"Learning rate.: {self.S_LEARNING_RATE}")
+        # for i in range(len(self.sub_policies)): # For now i think all sub policies equal so not necessary..
+        self.sub_policies[0].print_hyperparam()
+
+        print("#" * 31)
+
+    def save_model(self, results_path, filename_id):
+        """
+        Saves weights of every MLP.
+
+        Args:
+            results_path (Path): Path to the results directory
+            filename_id (str): Identifier that links to a hyperparam YAML file.
+
+        Returns:
+
+        """
+        path = results_path / filename_id
+        if not path.exists():
+            Path.mkdir(path, parents=True)
+        # Saves master policy
+        policy_path = path / 'master_policy_net.pt'
+        target_path = path / 'master_target_net.pt'
+        torch.save(self.master_policy.policy_net.state_dict(), policy_path)
+        torch.save(self.master_policy.target_net.state_dict(), target_path)
+        # Saves sub_policies
+        for i, sub_policy in enumerate(self.sub_policies):
+            policy_path = path / ('sub_policy_net' + str(i) + '.pt')
+            target_path = path / ('sub_target_net' + str(i) + '.pt')
+            torch.save(sub_policy.policy_net.state_dict(), policy_path)
+            torch.save(sub_policy.target_net.state_dict(), target_path)
+
+    def load_model(self, path):
+        """
+        Loads the weights from the specified path. Only works if weights are all stored in the same directory and
+        with the same naming style as in the save_model function.
+
+        Args:
+            path (Path): Path to the directory containing all the weights.
+
+        Returns:
+
+        """
+        # Loads master policy
+        policy_path = path / 'master_policy_net.pt'
+        target_path = path / 'master_target_net.pt'
+        self.master_policy.policy_net.load_state_dict(torch.load(policy_path))
+        self.master_policy.target_net.load_state_dict(torch.load(target_path))
+        # Saves sub_policies
+        for i, sub_policy in enumerate(self.sub_policies):
+            policy_path = path / ('sub_policy_net' + str(i) + '.pt')
+            target_path = path / ('sub_target_net' + str(i) + '.pt')
+            sub_policy.policy_net.load_state_dict(torch.load(policy_path))
+            sub_policy.target_net.load_state_dict(torch.load(target_path))
 
 
 def plot_info(data, path, title=None, labels=None, fig_num=None):
@@ -119,10 +203,14 @@ def plot_info(data, path, title=None, labels=None, fig_num=None):
 
 
 if __name__ == '__main__':
-    path = CONF_DIR / 'hyperparam.yaml'
-    with open(path) as file:
+    hyperparam_pathname = CONF_DIR / 'hyperparam_01.yaml'
+    results_path = (hyperparam_pathname.parents[2] / 'results')  # For now..
+    with open(hyperparam_pathname) as file:
         hyperparam = yaml.full_load(file)
 
-    foo = HRLDQN(10, 5, **hyperparam)
-    print(foo.master_policy.policy_net)
-    print(foo.sub_policies[0].policy_net)
+    # Make sure output exists
+    if not results_path.exists():
+        Path.mkdir(results_path, parents=True)
+
+    my_model = HRLDQN(16, 16, **hyperparam)
+    my_model.print_model()
