@@ -52,6 +52,7 @@ class Policy:
         self.target_net.eval()
         self.optimizer = optim.RMSprop(self.policy_net.parameters(), lr=kwargs.get('lr'))
         # Others
+        self.device = device
         self.steps_done = 0
         self.obs_space = obs_space
         self.action_space = action_space
@@ -78,8 +79,49 @@ class Policy:
         else:
             return torch.tensor([[random.randrange(self.action_space)]], device=self.device, dtype=torch.long)
 
-    def optimize_model(self):
-        pass
+    def optimize_model(self, memory, batch_size, gamma, loss_func):
+        if len(memory) < batch_size:
+            return
+        transitions = memory.sample(batch_size)
+        # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
+        # detailed explanation). This converts batch-array of Transitions
+        # to Transition of batch-arrays.
+        batch = Transition(*zip(*transitions))
+
+        # Compute a mask of non-final states and concatenate the batch elements
+        # (a final state would've been the one after which simulation ended)
+        non_final_mask = torch.tensor(tuple(map(lambda s: not s,
+                                                batch.done)), device=self.device, dtype=torch.bool)
+        # TODO:This line below can return an empty tensor and crashes (happened for batch_size=4)
+        non_final_next_states = torch.cat([s for (s, d) in zip(batch.next_state, batch.done) if not d])
+        state_batch = torch.cat(batch.state)
+        action_batch = torch.cat(batch.action)
+        reward_batch = torch.cat(batch.reward)
+
+        # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
+        # columns of actions taken. These are the actions which would've been taken
+        # for each batch state according to policy_net
+        state_action_values = self.policy_net(state_batch).gather(1, action_batch)
+
+        # Compute V(s_{t+1}) for all next states.
+        # Expected values of actions for non_final_next_states are computed based
+        # on the "older" target_net; selecting their best reward with max(1)[0].
+        # This is merged based on the mask, such that we'll have either the expected
+        # state value or 0 in case the state was final.
+        next_state_values = torch.zeros(batch_size, device=self.device)
+        next_state_values[non_final_mask] = self.target_net(non_final_next_states).max(1)[0].detach()
+        # Compute the expected Q values
+        expected_state_action_values = (next_state_values * gamma) + reward_batch
+
+        # Compute Huber loss
+        loss = loss_func(state_action_values, expected_state_action_values.unsqueeze(1))
+
+        # Optimize the model
+        self.optimizer.zero_grad()
+        loss.backward()
+        # for param in self.policy_net.parameters():
+        #     param.grad.data.clamp_(-1, 1)  # TODO: necessary?
+        self.optimizer.step()
 
     def print_hyperparam(self):
         print(f"Epsilon start: {self.EPS_START}")
@@ -138,6 +180,15 @@ class HRLDQN:
         self.sub_policies[0].print_hyperparam()
 
         print("#" * 31)
+
+    def optimize_master(self):
+        self.master_policy.optimize_model(self.master_ER, self.BATCH_SIZE, self.GAMMA, self.loss)
+
+    def optimize_sub(self, idx):
+        if idx < 0 or idx > len(self.sub_policies):
+            raise IndexError(f"Index must be between 0 and {len(self.sub_policies)}")
+        else:
+            self.sub_policies[idx].optimize_model(self.sub_ER, self.BATCH_SIZE, self.GAMMA, self.loss)
 
     def save_model(self, results_path, filename_id):
         """
