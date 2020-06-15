@@ -1,3 +1,6 @@
+num_cycles: 200
+warmup_period: 20
+joint_period: 100
 batch_size: 32
 gamma: 0.99
 eps_start: 1.0

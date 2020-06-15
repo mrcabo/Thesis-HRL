@@ -31,7 +31,7 @@ class ReplayMemory(object):
 
 
 def normalize_values(state, inv=False):
-    NORM_VEC = [19., 19., 1., 1., 1., 1., 1., 8., 8., 8., 8., 8., 8., 8.]
+    NORM_VEC = [19., 19.] + [1.] * 14
     device = state.device
     norm_vec = torch.tensor(NORM_VEC, device=device)
     if inv:
@@ -41,27 +41,11 @@ def normalize_values(state, inv=False):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Grasping detection system')
-    parser.add_argument('--num_episodes', type=int, default=500,
-                        help='Number of episodes that will be run')
-    parser.add_argument('--test', type=str, default=None,
-                        help='Suffix of the weights that will be loaded during testing (default: train)')
-    parser.add_argument('--batch_size', type=int, default=128,
-                        help='Batch size')
-    parser.add_argument('--gamma', type=float, default=0.999,
-                        help='Gamma or discount factor')
-    parser.add_argument('--eps_decay', type=float, default=500,
-                        help='Epsilon decay')
-    parser.add_argument('--eps_start', type=float, default=0.9,
-                        help='Epsilon starting value')
-    parser.add_argument('--eps_end', type=float, default=0.05,
-                        help='Epsilon final value')
-    parser.add_argument('--target_update', type=float, default=100,
-                        help='Target net update freq.')
-    parser.add_argument('--lr', type=float, default=1e-2,
-                        help='Learning rate')
-    parser.add_argument('--memory', type=float, default=1e4,
-                        help='Experience replay length')
+    parser = argparse.ArgumentParser(description='Parser')
+    parser.add_argument('--hyperparam', type=str, default='',
+                        help='Name of the hyperparamer YAML file to be used. It should be placed in the config '
+                             'directory.')
+    parser.add_argument('--test', type=str, default='',
+                        help='Path to the directory containing all the saved weights.')
     args = parser.parse_args()
-    return (args.num_episodes, args.test, args.batch_size, args.gamma, args.eps_decay, args.eps_start, args.eps_end,
-            args.target_update, args.lr, args.memory)
+    return args

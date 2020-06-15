@@ -8,10 +8,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import yaml
 
 from thesis_hrl.utils import ReplayMemory, Transition
-from thesis_hrl.config import CONF_DIR
 
 
 def reset_weights(m):
@@ -190,29 +188,25 @@ class HRLDQN:
         else:
             self.sub_policies[idx].optimize_model(self.sub_ER, self.BATCH_SIZE, self.GAMMA, self.loss)
 
-    def save_model(self, results_path, filename_id):
+    def save_model(self, results_path):
         """
         Saves weights of every MLP.
 
         Args:
             results_path (Path): Path to the results directory
-            filename_id (str): Identifier that links to a hyperparam YAML file.
 
         Returns:
 
         """
-        path = results_path / filename_id
-        if not path.exists():
-            Path.mkdir(path, parents=True)
         # Saves master policy
-        policy_path = path / 'master_policy_net.pt'
-        target_path = path / 'master_target_net.pt'
+        policy_path = results_path / 'master_policy_net.pt'
+        target_path = results_path / 'master_target_net.pt'
         torch.save(self.master_policy.policy_net.state_dict(), policy_path)
         torch.save(self.master_policy.target_net.state_dict(), target_path)
         # Saves sub_policies
         for i, sub_policy in enumerate(self.sub_policies):
-            policy_path = path / ('sub_policy_net' + str(i) + '.pt')
-            target_path = path / ('sub_target_net' + str(i) + '.pt')
+            policy_path = results_path / ('sub_policy_net' + str(i) + '.pt')
+            target_path = results_path / ('sub_target_net' + str(i) + '.pt')
             torch.save(sub_policy.policy_net.state_dict(), policy_path)
             torch.save(sub_policy.target_net.state_dict(), target_path)
 
@@ -251,17 +245,3 @@ def plot_info(data, path, title=None, labels=None, fig_num=None):
         plt.ylabel(ylabel)
     plt.plot(data)
     plt.savefig(path)
-
-
-if __name__ == '__main__':
-    hyperparam_pathname = CONF_DIR / 'hyperparam_01.yaml'
-    results_path = (hyperparam_pathname.parents[2] / 'results')  # For now..
-    with open(hyperparam_pathname) as file:
-        hyperparam = yaml.full_load(file)
-
-    # Make sure output exists
-    if not results_path.exists():
-        Path.mkdir(results_path, parents=True)
-
-    my_model = HRLDQN(16, 16, **hyperparam)
-    my_model.print_model()
