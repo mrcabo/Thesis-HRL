@@ -68,8 +68,8 @@ class Policy:
         sample = random.random()
         eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
                         math.exp(-1. * self.steps_done / self.EPS_DECAY)
-        if self.steps_done % 500 == 0 and eps_threshold > 0.2:
-            print(f"Epsilon threshold: {eps_threshold}")
+        # if self.steps_done % 500 == 0 and eps_threshold > 0.2:
+        #     print(f"Epsilon threshold: {eps_threshold}")
         self.steps_done += 1
         if sample > eps_threshold:
             with torch.no_grad():
