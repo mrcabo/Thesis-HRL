@@ -22,12 +22,12 @@ def train(env, model, task_list, results_path, **kwargs):
 
     for i_cycle in range(kwargs.get('num_cycles')):
         state = env.reset()
+        chosen_task = random.choice(task_list)
+        env.set_current_task(chosen_task)
         state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
         cycle_reward = 0
         # Sample task from the task distribution (possibility)
         model.master_policy.reset()  # Reset :math:`\theta`
-        chosen_task = random.choice(task_list)
-        env.set_current_task(chosen_task)
         # Warmup period
         for w in range(W):
             policy_idx = model.master_policy.select_action(state)  # Chooses a policy
@@ -48,8 +48,8 @@ def train(env, model, task_list, results_path, **kwargs):
                 # This ensures that W updates will be performed always.
                 if w < W:  # The last one won't be reset so it can continue to gather info in next phase.
                     state = env.reset()
-                    state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
                     env.set_current_task(chosen_task)
+                    state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
                 continue
             # Update the target network, copying all weights and biases in DQN
             if model.master_policy.steps_done % model.TARGET_UPDATE == 0:
@@ -77,8 +77,8 @@ def train(env, model, task_list, results_path, **kwargs):
             # env.render()
             if done:
                 state = env.reset()
-                state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
                 env.set_current_task(chosen_task)
+                state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
                 continue
             # Update the target network, copying all weights and biases in DQN
             if model.master_policy.steps_done % model.TARGET_UPDATE == 0:
