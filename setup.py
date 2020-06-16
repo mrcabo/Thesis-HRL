@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.0.1",
     packages=setuptools.find_packages(),
     # install_requires=['gym', 'householdenv', 'torch', 'matplotlib'],
-    install_requires=['gym', 'torch', 'matplotlib'],
+    install_requires=['gym', 'torch', 'matplotlib', 'PyYAML'],
     package_data={
         # If any package contains *.txt or *.rst files, include them:
         "": ["*.txt", "*.json"]
