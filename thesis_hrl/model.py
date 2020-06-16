@@ -133,7 +133,8 @@ class HRLDQN:
         # Hyper-parameters
         self.BATCH_SIZE = kwargs.get('batch_size', 32)
         self.GAMMA = kwargs.get('gamma', 0.99)
-        self.TARGET_UPDATE = int(kwargs.get('target_update', 1e4))
+        self.M_TARGET_UPDATE = int(kwargs.get('master_target_update', 1e4))
+        self.S_TARGET_UPDATE = int(kwargs.get('sub_target_update', 1e4))
         self.M_LEARNING_RATE = kwargs.get('master_lr', 0.00025)
         self.S_LEARNING_RATE = kwargs.get('sub_lr', 0.00025)
         self.MASTER_ER_LENGTH = int(kwargs.get('master_ER', 1000000))
@@ -144,10 +145,12 @@ class HRLDQN:
         self.master_policy = Policy(obs_space, master_actions, self.device,
                                     lr=kwargs.get('lr', 0.005),
                                     hidden_size=kwargs.get('master_hidden_size', (1500, 500)),
+                                    eps_decay=kwargs.get('master_eps_decay'),
                                     **kwargs)
         self.sub_policies = [Policy(obs_space, action_space, self.device,
                                     lr=kwargs.get('lr', 0.00025),
                                     hidden_size=kwargs.get('sub_hidden_size', (1500, 500)),
+                                    eps_decay=kwargs.get('sub_eps_decay'),
                                     **kwargs) for _ in range(kwargs.get('n_sub_policies', 3))]
         self.loss = nn.MSELoss()
         self.master_ER = ReplayMemory(self.MASTER_ER_LENGTH)
@@ -162,18 +165,19 @@ class HRLDQN:
         print("*" * 3 + "  Shared values  " + "*" * 3)
         print(f"Batch size: {self.BATCH_SIZE}")
         print(f"Gamma: {self.GAMMA}")
-        print(f"Target net update freq.: {self.TARGET_UPDATE}")
 
         # Master policy
         print("*" * 3 + "  Master policy  " + "*" * 3)
         print(f"ER length.: {self.MASTER_ER_LENGTH}")
         print(f"Learning rate.: {self.M_LEARNING_RATE}")
+        print(f"Target net update freq.: {self.M_TARGET_UPDATE}")
         self.master_policy.print_hyperparam()
 
         # Sub-policies
         print("*" * 3 + "  Sub policies  " + "*" * 3)
         print(f"ER length.: {self.SUB_ER_LENGTH}")
         print(f"Learning rate.: {self.S_LEARNING_RATE}")
+        print(f"Target net update freq.: {self.S_TARGET_UPDATE}")
         # for i in range(len(self.sub_policies)): # For now i think all sub policies equal so not necessary..
         self.sub_policies[0].print_hyperparam()
 

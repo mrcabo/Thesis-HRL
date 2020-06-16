@@ -52,7 +52,7 @@ def train(env, model, task_list, results_path, **kwargs):
                     state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
                 continue
             # Update the target network, copying all weights and biases in DQN
-            if model.master_policy.steps_done % model.TARGET_UPDATE == 0:
+            if model.master_policy.steps_done % model.M_TARGET_UPDATE == 0:
                 model.target_net.load_state_dict(model.policy_net.state_dict())
 
         # Joint update period
@@ -81,10 +81,10 @@ def train(env, model, task_list, results_path, **kwargs):
                 state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
                 continue
             # Update the target network, copying all weights and biases in DQN
-            if model.master_policy.steps_done % model.TARGET_UPDATE == 0:
+            if model.master_policy.steps_done % model.M_TARGET_UPDATE == 0:
                 model.target_net.load_state_dict(model.policy_net.state_dict())
             for policy in model.sub_policies:
-                if policy.steps_done % model.TARGET_UPDATE == 0:
+                if policy.steps_done % model.S_TARGET_UPDATE == 0:
                     policy.target_net.load_state_dict(policy.policy_net.state_dict())
 
         # print(f"Current state is: {env.env.states}")
