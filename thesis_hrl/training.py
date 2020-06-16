@@ -23,7 +23,7 @@ def train(env, model, task_list, results_path, **kwargs):
     for i_cycle in range(kwargs.get('num_cycles')):
         state = env.reset()
         chosen_task = random.choice(task_list)
-        env.set_current_task(chosen_task)
+        state = env.set_current_task(chosen_task)
         state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
         cycle_reward = 0
         # Sample task from the task distribution (possibility)
@@ -48,7 +48,7 @@ def train(env, model, task_list, results_path, **kwargs):
                 # This ensures that W updates will be performed always.
                 if w < W:  # The last one won't be reset so it can continue to gather info in next phase.
                     state = env.reset()
-                    env.set_current_task(chosen_task)
+                    state = env.set_current_task(chosen_task)
                     state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
                 continue
             # Update the target network, copying all weights and biases in DQN
@@ -77,7 +77,7 @@ def train(env, model, task_list, results_path, **kwargs):
             # env.render()
             if done:
                 state = env.reset()
-                env.set_current_task(chosen_task)
+                state = env.set_current_task(chosen_task)
                 state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
                 continue
             # Update the target network, copying all weights and biases in DQN
