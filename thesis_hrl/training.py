@@ -18,7 +18,7 @@ def train(env, model, task_list, results_path, **kwargs):
     filename_cum_reward = results_path / 'Cumulative rewards.png'
     cycle_rewards = []
     W = kwargs.get('warmup_period')
-    U = kwargs.get('joint_period')
+    J = kwargs.get('joint_period')
 
     for i_cycle in range(kwargs.get('num_cycles')):
         state = env.reset()
@@ -28,6 +28,7 @@ def train(env, model, task_list, results_path, **kwargs):
         cycle_reward = 0
         # Sample task from the task distribution (possibility)
         model.master_policy.reset()  # Reset :math:`\theta`
+
         # Warmup period
         for w in range(W):
             policy_idx = model.master_policy.select_action(state)  # Chooses a policy
@@ -46,17 +47,15 @@ def train(env, model, task_list, results_path, **kwargs):
             # env.render()
             if done:
                 # This ensures that W updates will be performed always.
-                if w < W:  # The last one won't be reset so it can continue to gather info in next phase.
-                    state = env.reset()
-                    state = env.set_current_task(chosen_task)
-                    state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
-                continue
+                state = env.reset()
+                state = env.set_current_task(chosen_task)
+                state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
             # Update the target network, copying all weights and biases in DQN
             if model.master_policy.steps_done % model.M_TARGET_UPDATE == 0:
-                model.target_net.load_state_dict(model.policy_net.state_dict())
+                model.master_policy.target_net.load_state_dict(model.master_policy.policy_net.state_dict())
 
         # Joint update period
-        for u in range(U):
+        for j in range(J):
             policy_idx = model.master_policy.select_action(state)  # Chooses a policy
             policy_action = model.sub_policies[policy_idx].select_action(state)
             next_state, reward, done, _ = env.step(policy_action.item())
@@ -79,10 +78,9 @@ def train(env, model, task_list, results_path, **kwargs):
                 state = env.reset()
                 state = env.set_current_task(chosen_task)
                 state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
-                continue
             # Update the target network, copying all weights and biases in DQN
             if model.master_policy.steps_done % model.M_TARGET_UPDATE == 0:
-                model.target_net.load_state_dict(model.policy_net.state_dict())
+                model.master_policy.target_net.load_state_dict(model.master_policy.policy_net.state_dict())
             for policy in model.sub_policies:
                 if policy.steps_done % model.S_TARGET_UPDATE == 0:
                     policy.target_net.load_state_dict(policy.policy_net.state_dict())
@@ -90,7 +88,7 @@ def train(env, model, task_list, results_path, **kwargs):
         # print(f"Current state is: {env.env.states}")
         cycle_rewards.append(cycle_reward)
         if i_cycle % 100 == 0:
-            print(f"Episode {i_cycle}")
+            print(f"Cycle {i_cycle}")
             plot_info(np.array(cycle_rewards), filename_ep_reward, 'Cycle rewards', ('Cycle', 'Reward'), fig_num=1)
             # Cumulative reward
             cum_reward = [cycle_rewards[0]]
