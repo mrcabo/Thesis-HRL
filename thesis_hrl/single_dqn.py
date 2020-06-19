@@ -11,6 +11,7 @@ from household_env.envs.house_env import Tasks
 from thesis_hrl.q_learning_model import QLearning, plot_info
 from thesis_hrl.utils import parse_arguments, normalize_values
 from thesis_hrl.config import CONF_DIR
+from thesis_hrl.training import plot_and_save
 
 
 def train(env, model, task_list, results_path, **kwargs):
@@ -53,24 +54,11 @@ def train(env, model, task_list, results_path, **kwargs):
 
         if i_episode % 100 == 0:
             print(f"Episode {i_episode}")
-            plot_info(np.array(ep_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
-            # Cumulative reward
-            cum_reward = [ep_rewards[0]]
-            for val in ep_rewards[1:]:
-                cum_reward.append(val + cum_reward[-1])
-            plot_info(cum_reward, filename_cum_reward, 'Cumulative reward', ('Episode', 'Reward'), fig_num=2)
-            model.save_models(results_path)
+            plot_and_save(model, ep_rewards, filename_ep_reward, filename_cum_reward)
 
-    plot_info(np.array(ep_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
-    cum_reward = [ep_rewards[0]]
-    for val in ep_rewards[1:]:
-        cum_reward.append(val + cum_reward[-1])
-    plot_info(cum_reward, filename_cum_reward, 'Cumulative reward', ('Episode', 'Reward'), fig_num=2)
-    print(f"Cumulative reward: {cum_reward[-1]}")
-
-    # Save model
-    model.save_models(results_path)
+    cum_r = plot_and_save(model, ep_rewards, filename_ep_reward, filename_cum_reward)
     print('Training complete')
+    print(f"Cumulative reward: {cum_r}")
 
 
 def test(env, model, path_to_output, weights_suffix):
@@ -102,7 +90,7 @@ def test(env, model, path_to_output, weights_suffix):
                 # time.sleep(0.1)
     print('Testing complete')
     print(f"{successful_episodes}/{num_episodes} successful episodes. "
-          f"{((successful_episodes/num_episodes)*100)}% success rate")
+          f"{((successful_episodes / num_episodes) * 100)}% success rate")
 
 
 if __name__ == '__main__':
