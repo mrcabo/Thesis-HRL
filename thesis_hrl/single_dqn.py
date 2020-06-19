@@ -73,11 +73,13 @@ def train(env, model, task_list, results_path, **kwargs):
     print('Training complete')
 
 
-def test(num_episodes, env, model, path_to_output, weights_suffix):
+def test(env, model, path_to_output, weights_suffix):
     model.load_models(path_to_output, weights_suffix)
     model.policy_net.eval()
     model.target_net.eval()
     env.render()
+    num_episodes = 10
+    successful_episodes = 0
     with torch.no_grad():
         for _ in range(num_episodes):
             state = env.reset()
@@ -93,10 +95,14 @@ def test(num_episodes, env, model, path_to_output, weights_suffix):
                 state = next_state
                 env.render()
                 if done:
+                    if ep_reward > 90:
+                        successful_episodes += 1
                     print(f"Episode reward: {ep_reward}")
                     break
                 # time.sleep(0.1)
     print('Testing complete')
+    print(f"{successful_episodes}/{num_episodes} successful episodes. "
+          f"{((successful_episodes/num_episodes)*100)}% success rate")
 
 
 if __name__ == '__main__':
@@ -132,7 +138,7 @@ if __name__ == '__main__':
     my_model.print_hyperparam()
 
     if args.test:
-        test(num_episodes, env, my_model, results_path, args.test)
+        test(env, my_model, results_path, args.test)
     else:
         train(env, my_model, tasks_list, results_path, **hyperparam)
 

@@ -1,22 +1,23 @@
 num_cycles: 10000
-warmup_period: 180
-joint_period: 20
+warmup_period: 600
+joint_period: 100
 batch_size: 32
 gamma: 0.99
 eps_start: 1.0
 eps_end: 0.1
-master_eps_decay: 1.e+2
-sub_eps_decay: 2.e+5
+
+master_eps_decay: 2.e+4
 master_target_update: 1.e+2
-sub_target_update: 1.e+4
 master_lr: 0.01
-sub_lr: 0.00025
-master_ER: 10000
+master_ER: 5000
 master_hidden_size: !!python/tuple
-  - 400
-  - 300
+  - 1000
+  - 500
 n_sub_policies: 3
-sub_ER: 100000
+sub_eps_decay: 2.e+5
+sub_target_update: 1.e+3
+sub_lr: 0.00025
+sub_ER: 1000000
 sub_hidden_size: !!python/tuple
   - 1000
   - 500
