@@ -13,7 +13,7 @@ from thesis_hrl.utils import parse_arguments, normalize_values
 from thesis_hrl.config import CONF_DIR
 
 
-def plot_and_save(model, cycle_rewards, filename_ep_reward, filename_cum_reward):
+def plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward):
     plot_info(np.array(cycle_rewards), filename_ep_reward, 'Cycle rewards', ('Cycle', 'Reward'), fig_num=1)
     # Cumulative reward
     cum_reward = [cycle_rewards[0]]
@@ -100,9 +100,9 @@ def train(env, model, task_list, results_path, **kwargs):
         cycle_rewards.append(cycle_reward)
         if i_cycle % 100 == 0:
             print(f"Cycle {i_cycle}")
-            plot_and_save(model, cycle_rewards, filename_ep_reward, filename_cum_reward)
+            plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward)
 
-    cum_r = plot_and_save(model, cycle_rewards, filename_ep_reward, filename_cum_reward)
+    cum_r = plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward)
     print('Training complete')
     print(f"Cumulative reward: {cum_r}")
 

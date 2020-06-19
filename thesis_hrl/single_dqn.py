@@ -54,9 +54,9 @@ def train(env, model, task_list, results_path, **kwargs):
 
         if i_episode % 100 == 0:
             print(f"Episode {i_episode}")
-            plot_and_save(model, ep_rewards, filename_ep_reward, filename_cum_reward)
+            plot_and_save(model, ep_rewards, results_path, filename_ep_reward, filename_cum_reward)
 
-    cum_r = plot_and_save(model, ep_rewards, filename_ep_reward, filename_cum_reward)
+    cum_r = plot_and_save(model, ep_rewards, results_path, filename_ep_reward, filename_cum_reward)
     print('Training complete')
     print(f"Cumulative reward: {cum_r}")
 
