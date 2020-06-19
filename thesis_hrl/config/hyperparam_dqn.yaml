@@ -1,4 +1,4 @@
-num_episodes: 10000
+num_episodes: 5000
 batch_size: 32
 gamma: 0.99
 eps_start: 1.0
