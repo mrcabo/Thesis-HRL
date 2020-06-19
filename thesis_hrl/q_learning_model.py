@@ -135,14 +135,14 @@ class QLearning:
              f"_{self.LEARNING_RATE}")
         return s
 
-    def save_models(self, path):
+    def save_model(self, path):
         # Saves weights of the network to a file
         policy_path = path / ('policy_net' + self.get_param_suffix() + '.pt')
         target_path = path / ('target_net' + self.get_param_suffix() + '.pt')
         torch.save(self.policy_net.state_dict(), policy_path)
         torch.save(self.target_net.state_dict(), target_path)
 
-    def load_models(self, path, w_suffix):
+    def load_model(self, path, w_suffix):
         # Loads weights of the network from a file
         policy_path = path / ('policy_net_' + w_suffix + '.pt')
         target_path = path / ('target_net_' + w_suffix + '.pt')

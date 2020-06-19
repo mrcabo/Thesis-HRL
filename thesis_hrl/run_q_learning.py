@@ -61,7 +61,7 @@ def train(num_episodes, env, model, path_to_output):
             plot_info(cum_reward, filename_cum_reward, 'Cumulative reward', ('Episode', 'Reward'), fig_num=2)
             # Avg. reward over the last 100 episodes
             plot_info(avg_rewards, filename_avg_reward, 'Average rewards', ('Episode', 'Reward'), fig_num=3)
-            model.save_models(path_to_output)
+            model.save_model(path_to_output)
 
     plot_info(np.array(ep_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
     cum_reward = [ep_rewards[0]]
@@ -71,12 +71,12 @@ def train(num_episodes, env, model, path_to_output):
     print(f"Cumulative reward: {cum_reward[-1]}")
 
     # Save model
-    model.save_models(path_to_output)
+    model.save_model(path_to_output)
     print('Training complete')
 
 
 def test(num_episodes, env, model, path_to_output, weights_suffix):
-    model.load_models(path_to_output, weights_suffix)
+    model.load_model(path_to_output, weights_suffix)
     model.policy_net.eval()
     model.target_net.eval()
     env.render()

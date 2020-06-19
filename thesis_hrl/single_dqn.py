@@ -62,7 +62,7 @@ def train(env, model, task_list, results_path, **kwargs):
 
 
 def test(env, model, path_to_output, weights_suffix):
-    model.load_models(path_to_output, weights_suffix)
+    model.load_model(path_to_output, weights_suffix)
     model.policy_net.eval()
     model.target_net.eval()
     env.render()
