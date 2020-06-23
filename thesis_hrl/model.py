@@ -192,6 +192,13 @@ class HRLDQN:
         else:
             self.sub_policies[idx].optimize_model(self.sub_ER, self.BATCH_SIZE, self.GAMMA, self.loss)
 
+    def testing_mode(self):
+        self.master_policy.policy_net.eval()
+        self.master_policy.target_net.eval()
+        for policy in self.sub_policies:
+            policy.policy_net.eval()
+            policy.target_net.eval()
+
     def save_model(self, results_path):
         """
         Saves weights of every MLP.
