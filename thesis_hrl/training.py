@@ -43,8 +43,7 @@ def train(env, model, task_list, results_path, **kwargs):
         # Warmup period
         for w in range(W):
             policy_idx = model.master_policy.select_action(state)  # Chooses a policy
-            policy_action = model.sub_policies[policy_idx].policy_net(state.unsqueeze(0)).max(1)[1].view(1, 1)
-            # policy_action = model.sub_policies[policy_idx].select_action(state)  # TODO: maybe this works better??
+            policy_action = model.sub_policies[policy_idx.item()].policy_net(state.unsqueeze(0)).max(1)[1].view(1, 1)
             next_state, reward, done, _ = env.step(policy_action.item())
             # print(f"Primitive action taken: {policy_action.item()}")
             cycle_reward += reward
@@ -68,7 +67,7 @@ def train(env, model, task_list, results_path, **kwargs):
         # Joint update period
         for j in range(J):
             policy_idx = model.master_policy.select_action(state)  # Chooses a policy
-            policy_action = model.sub_policies[policy_idx].select_action(state)
+            policy_action = model.sub_policies[policy_idx.item()].select_action(state)
             next_state, reward, done, _ = env.step(policy_action.item())
             # print(f"Primitive action taken: {policy_action.item()}")
             cycle_reward += reward
@@ -76,11 +75,11 @@ def train(env, model, task_list, results_path, **kwargs):
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
             model.master_policy.push_to_memory(state.unsqueeze(0), policy_idx, next_state.unsqueeze(0), reward, done)
-            model.sub_policies[policy_idx].push_to_memory(state.unsqueeze(0), policy_action, next_state.unsqueeze(0), reward, done)
+            model.sub_policies[policy_idx.item()].push_to_memory(state.unsqueeze(0), policy_action, next_state.unsqueeze(0), reward, done)
             state = next_state
 
             model.optimize_master()
-            model.optimize_sub(policy_idx)
+            model.optimize_sub(policy_idx.item())
             # TODO:we could as well update all policies? after all they share a ER.
             # for i, _ in enumerate(model.sub_policies):
             #     model.optimize_sub(i)
