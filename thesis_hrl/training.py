@@ -51,7 +51,7 @@ def train(env, model, task_list, results_path, **kwargs):
             next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
-            model.master_ER.push(state.unsqueeze(0), policy_idx, next_state.unsqueeze(0), reward, done)
+            model.master_policy.push_to_memory(state.unsqueeze(0), policy_idx, next_state.unsqueeze(0), reward, done)
             state = next_state
 
             model.optimize_master()
@@ -75,8 +75,8 @@ def train(env, model, task_list, results_path, **kwargs):
             next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
-            model.master_ER.push(state.unsqueeze(0), policy_idx, next_state.unsqueeze(0), reward, done)
-            model.sub_ER.push(state.unsqueeze(0), policy_action, next_state.unsqueeze(0), reward, done)
+            model.master_policy.push_to_memory(state.unsqueeze(0), policy_idx, next_state.unsqueeze(0), reward, done)
+            model.sub_policies[policy_idx].push_to_memory(state.unsqueeze(0), policy_action, next_state.unsqueeze(0), reward, done)
             state = next_state
 
             model.optimize_master()

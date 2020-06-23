@@ -57,12 +57,16 @@ class Policy:
         self.EPS_START = kwargs.get('eps_start', 1)
         self.EPS_END = kwargs.get('eps_end', 0.1)
         self.EPS_DECAY = kwargs.get('eps_decay', 2e5)
+        self.memory = ReplayMemory(kwargs.get('memory'))
 
     def reset(self):
         self.policy_net.apply(reset_weights)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
         self.steps_done = 0
+
+    def push_to_memory(self, *args):
+        self.memory.push(*args)
 
     def select_action(self, state):
         sample = random.random()
@@ -77,10 +81,10 @@ class Policy:
         else:
             return torch.tensor([[random.randrange(self.action_space)]], device=self.device, dtype=torch.long)
 
-    def optimize_model(self, memory, batch_size, gamma, loss_func):
-        if len(memory) < batch_size:
+    def optimize_model(self, batch_size, gamma, loss_func):
+        if len(self.memory) < batch_size:
             return
-        transitions = memory.sample(batch_size)
+        transitions = self.memory.sample(batch_size)
         # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
         # detailed explanation). This converts batch-array of Transitions
         # to Transition of batch-arrays.
@@ -137,8 +141,6 @@ class HRLDQN:
         self.S_TARGET_UPDATE = int(kwargs.get('sub_target_update', 1e4))
         self.M_LEARNING_RATE = kwargs.get('master_lr', 0.00025)
         self.S_LEARNING_RATE = kwargs.get('sub_lr', 0.00025)
-        self.MASTER_ER_LENGTH = int(kwargs.get('master_ER', 1000000))
-        self.SUB_ER_LENGTH = int(kwargs.get('sub_ER', 1000000))
         # Model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         master_actions = kwargs.get('n_sub_policies', 3)
@@ -146,15 +148,15 @@ class HRLDQN:
                                     lr=kwargs.get('lr', 0.005),
                                     hidden_size=kwargs.get('master_hidden_size', (1500, 500)),
                                     eps_decay=kwargs.get('master_eps_decay'),
+                                    memory=kwargs.get('master_ER'),
                                     **kwargs)
         self.sub_policies = [Policy(obs_space, action_space, self.device,
                                     lr=kwargs.get('lr', 0.00025),
                                     hidden_size=kwargs.get('sub_hidden_size', (1500, 500)),
                                     eps_decay=kwargs.get('sub_eps_decay'),
+                                    memory=kwargs.get('sub_ER'),
                                     **kwargs) for _ in range(kwargs.get('n_sub_policies', 3))]
         self.loss = nn.MSELoss()
-        self.master_ER = ReplayMemory(self.MASTER_ER_LENGTH)
-        self.sub_ER = ReplayMemory(self.SUB_ER_LENGTH)
         # Others
         self.obs_space = obs_space
         self.action_space = action_space
@@ -168,14 +170,14 @@ class HRLDQN:
 
         # Master policy
         print("*" * 3 + "  Master policy  " + "*" * 3)
-        print(f"ER length.: {self.MASTER_ER_LENGTH}")
+        print(f"ER length.: {self.master_policy.memory.capacity}")
         print(f"Learning rate.: {self.M_LEARNING_RATE}")
         print(f"Target net update freq.: {self.M_TARGET_UPDATE}")
         self.master_policy.print_hyperparam()
 
         # Sub-policies
         print("*" * 3 + "  Sub policies  " + "*" * 3)
-        print(f"ER length.: {self.SUB_ER_LENGTH}")
+        print(f"ER length.: {self.sub_policies[0].memory.capacity}")
         print(f"Learning rate.: {self.S_LEARNING_RATE}")
         print(f"Target net update freq.: {self.S_TARGET_UPDATE}")
         # for i in range(len(self.sub_policies)): # For now i think all sub policies equal so not necessary..
@@ -184,13 +186,13 @@ class HRLDQN:
         print("#" * 31)
 
     def optimize_master(self):
-        self.master_policy.optimize_model(self.master_ER, self.BATCH_SIZE, self.GAMMA, self.loss)
+        self.master_policy.optimize_model(self.BATCH_SIZE, self.GAMMA, self.loss)
 
     def optimize_sub(self, idx):
         if idx < 0 or idx > len(self.sub_policies):
             raise IndexError(f"Index must be between 0 and {len(self.sub_policies)}")
         else:
-            self.sub_policies[idx].optimize_model(self.sub_ER, self.BATCH_SIZE, self.GAMMA, self.loss)
+            self.sub_policies[idx].optimize_model(self.BATCH_SIZE, self.GAMMA, self.loss)
 
     def testing_mode(self):
         self.master_policy.policy_net.eval()
