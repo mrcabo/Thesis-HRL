@@ -25,4 +25,4 @@ source venv/bin/activate
 echo "Starting execution"
 
 #OG #python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 32 --eps_decay 2e5 --target_update 1e4 --lr 0.00025 --eps_start 1 --eps_end 0.1 --gamma 0.99 --memory 1000000
-python thesis_hrl/training.py --hyperparam hyperparam_02.yaml
+python thesis_hrl/training.py --hyperparam hyperparam_03.yaml
