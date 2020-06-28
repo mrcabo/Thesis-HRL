@@ -34,6 +34,7 @@ def train(env, model, task_list, results_path, **kwargs):
     for i_cycle in range(kwargs.get('num_cycles')):
         state = env.reset()
         chosen_task = random.choice(task_list)
+        print(f"Chosen task: {chosen_task.name}")  # DEBUG
         state = env.set_current_task(chosen_task)
         state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
         cycle_reward = 0
@@ -75,7 +76,8 @@ def train(env, model, task_list, results_path, **kwargs):
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
             model.master_policy.push_to_memory(state.unsqueeze(0), policy_idx, next_state.unsqueeze(0), reward, done)
-            model.sub_policies[policy_idx.item()].push_to_memory(state.unsqueeze(0), policy_action, next_state.unsqueeze(0), reward, done)
+            model.sub_policies[policy_idx.item()].push_to_memory(state.unsqueeze(0), policy_action,
+                                                                 next_state.unsqueeze(0), reward, done)
             state = next_state
 
             model.optimize_master()
