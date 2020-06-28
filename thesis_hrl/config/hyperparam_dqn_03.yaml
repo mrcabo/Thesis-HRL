@@ -1,9 +1,0 @@
-num_episodes: 10000
-batch_size: 32
-gamma: 0.99
-eps_start: 1.0
-eps_end: 0.1
-eps_decay: 2.e+5
-target_update: 1.e+4
-lr: 0.00025
-memory: 10000
