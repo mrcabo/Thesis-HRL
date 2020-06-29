@@ -6,6 +6,7 @@ import gym
 import numpy as np
 import torch
 import yaml
+import matplotlib.pyplot as plt
 from household_env.envs.house_env import Tasks
 
 from thesis_hrl.model import HRLDQN, plot_info
@@ -17,12 +18,26 @@ class PolicyUsage:
     def __init__(self, num_subpolicies):
         # Only record first 100 timesteps
         self.usage_list = []
+        self.window_size = 40
         for _ in range(num_subpolicies):
-            self.usage_list.append(np.zeros(100))
+            self.usage_list.append(np.zeros(self.window_size))
 
     def record(self, action, timestep):
-        if timestep < 100:
+        if timestep < self.window_size:
             self.usage_list[action][timestep] += 1
+
+    def plot_usage(self, n_episodes, path, title=None, labels=None, fig_num=None):
+        plt.figure(fig_num)
+        if title is not None:
+            plt.title(title)
+        if labels is not None:
+            xlabel, ylabel = labels
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
+        for i, data in enumerate(self.usage_list):
+            plt.plot(data / n_episodes, label=(f"Sub-policy_{i}"))
+        plt.legend()
+        plt.savefig(path)
 
 
 def test(env, model, task_list, results_path, **kwargs):
@@ -55,10 +70,9 @@ def test(env, model, task_list, results_path, **kwargs):
                     print(f"Episode reward: {ep_reward}")
                     break
 
-    for i in range(kwargs.get("n_sub_policies")):
-        graph_name = ('Sub-policy_' + str(i) + ' usage')
-        filename = results_path / (graph_name + '.png')
-        plot_info(usage.usage_list[i] / n_episodes, filename, graph_name, ('Timestep', 'Usage'), fig_num=i)
+    graph_name = 'Sub-policy usage'
+    filename = results_path / (graph_name + '.png')
+    usage.plot_usage(n_episodes, filename, graph_name, ('Timestep', 'Usage'), fig_num=0)
     print('Testing complete')
     print(f"{successful_episodes}/{n_episodes} successful episodes. "
           f"{((successful_episodes / n_episodes) * 100)}% success rate")
