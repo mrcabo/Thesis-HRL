@@ -26,7 +26,7 @@ class PolicyUsage:
         if timestep < self.window_size:
             self.usage_list[action][timestep] += 1
 
-    def plot_usage(self, n_episodes, path, title=None, labels=None, fig_num=None):
+    def plot_usage(self, path, title=None, labels=None, fig_num=None):
         plt.figure(fig_num)
         if title is not None:
             plt.title(title)
@@ -34,8 +34,13 @@ class PolicyUsage:
             xlabel, ylabel = labels
             plt.xlabel(xlabel)
             plt.ylabel(ylabel)
+
+        norm = self.usage_list[0]
+        for i in range(1, len(self.usage_list)):
+            norm = norm + self.usage_list[i]
+        norm = np.where(norm != 0, norm, 1)  # So to not divide by 0
         for i, data in enumerate(self.usage_list):
-            plt.plot(data / n_episodes, label=(f"Sub-policy_{i}"))
+            plt.plot(data / norm, label=(f"Sub-policy_{i}"))
         plt.legend()
         plt.savefig(path)
 
@@ -48,7 +53,8 @@ def test(env, model, task_list, results_path, **kwargs):
     successful_episodes = 0
     usage = PolicyUsage(kwargs.get("n_sub_policies"))
     with torch.no_grad():
-        for _ in range(n_episodes):
+        for e in range(n_episodes):
+            print(f"Episode {e}")
             state = env.reset()
             chosen_task = random.choice(task_list)
             print(f"Chosen task: {chosen_task.name}")  # DEBUG
@@ -72,7 +78,7 @@ def test(env, model, task_list, results_path, **kwargs):
 
     graph_name = 'Sub-policy usage'
     filename = results_path / (graph_name + '.png')
-    usage.plot_usage(n_episodes, filename, graph_name, ('Timestep', 'Usage'), fig_num=0)
+    usage.plot_usage(filename, graph_name, ('Timestep', 'Usage'), fig_num=0)
     print('Testing complete')
     print(f"{successful_episodes}/{n_episodes} successful episodes. "
           f"{((successful_episodes / n_episodes) * 100)}% success rate")
@@ -90,7 +96,7 @@ if __name__ == '__main__':
     results_path = results_path / hyperparam_pathname.stem
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.MAKE_SOUP, Tasks.MAKE_TEA]
+    tasks_list = [Tasks.MAKE_TEA]
     env.set_current_task(tasks_list[0])  # TODO: delete this if we change between tasks during learning
 
     my_model = HRLDQN(env.observation_space.shape[0], env.action_space.n, **hyperparam)
