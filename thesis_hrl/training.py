@@ -40,6 +40,7 @@ def train(env, model, task_list, results_path, **kwargs):
         cycle_reward = 0
         # Sample task from the task distribution (possibility)
         model.master_policy.reset()  # Reset :math:`\theta`
+        model.master_policy.reset_memory()
 
         # Warmup period
         for w in range(W):

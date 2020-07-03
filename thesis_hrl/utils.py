@@ -16,6 +16,10 @@ class ReplayMemory(object):
         self.memory = []
         self.position = 0
 
+    def reset(self):
+        self.memory = []
+        self.position = 0
+
     def push(self, *args):
         """Saves a transition."""
         if len(self.memory) < self.capacity:

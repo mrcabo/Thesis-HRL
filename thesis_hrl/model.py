@@ -68,6 +68,9 @@ class Policy:
     def push_to_memory(self, *args):
         self.memory.push(*args)
 
+    def reset_memory(self):
+        self.memory.reset()
+
     def select_action(self, state):
         sample = random.random()
         eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
