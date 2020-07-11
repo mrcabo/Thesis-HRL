@@ -35,7 +35,7 @@ class ReplayMemory(object):
 
 
 def normalize_values(state, inv=False):
-    NORM_VEC = [19., 19.] + [1.] * 14
+    NORM_VEC = [19., 19.] + [1.] * 21
     device = state.device
     norm_vec = torch.tensor(NORM_VEC, device=device)
     if inv:
