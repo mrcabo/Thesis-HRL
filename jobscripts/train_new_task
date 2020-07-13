@@ -1,0 +1,30 @@
+#!/bin/bash
+
+#SBATCH --time=23:55:00
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:v100:1
+#SBATCH --mem=20GB
+#SBATCH --output=Job-%j-q_learning.log
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=d.cabo.golvano@student.rug.nl
+
+module purge
+module load Python
+module load CUDA
+echo "Modules loaded"
+module list
+
+# echo "Creating venv"
+# python -m venv venv
+source venv/bin/activate
+# pip install --upgrade pip
+# pip install --upgrade setuptools
+# pip install -e /home/s3736555/Household-env
+# pip install -e .
+
+hp="hyperparam_12.yaml"
+weights="hyperparam_11"
+echo "Starting execution for $hp"
+
+#OG #python thesis_hrl/run_q_learning.py --num_episodes 150000 --batch_size 32 --eps_decay 2e5 --target_update 1e4 --lr 0.00025 --eps_start 1 --eps_end 0.1 --gamma 0.99 --memory 1000000
+python thesis_hrl/training.py --hyperparam $hp --weights $weights

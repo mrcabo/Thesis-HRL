@@ -51,5 +51,7 @@ def parse_arguments():
                              'directory.')
     parser.add_argument('--test', type=str, default='',
                         help='Path to the directory containing all the saved weights.')
+    parser.add_argument('--weights', type=str, default='',
+                        help='Experiment folder name e.g. "hyperparam_01".')
     args = parser.parse_args()
     return args
