@@ -154,7 +154,7 @@ if __name__ == '__main__':
         Path.mkdir(results_path, parents=True)
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.MAKE_SOUP, Tasks.MAKE_TEA, Tasks.MAKE_PASTA]
+    tasks_list = [Tasks.MAKE_SOUP, Tasks.MAKE_TEA]
     env.set_current_task(tasks_list[0])  # TODO: delete this if we change between tasks during learning
 
     my_model = HRLDQN(env.observation_space.shape[0], env.action_space.n, **hyperparam)
