@@ -148,13 +148,13 @@ class HRLDQN:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         master_actions = kwargs.get('n_sub_policies', 3)
         self.master_policy = Policy(obs_space, master_actions, self.device,
-                                    lr=kwargs.get('lr', 0.005),
+                                    lr=self.M_LEARNING_RATE,
                                     hidden_size=kwargs.get('master_hidden_size', (1500, 500)),
                                     eps_decay=kwargs.get('master_eps_decay'),
                                     memory=kwargs.get('master_ER'),
                                     **kwargs)
         self.sub_policies = [Policy(obs_space, action_space, self.device,
-                                    lr=kwargs.get('lr', 0.00025),
+                                    lr=self.S_LEARNING_RATE,
                                     hidden_size=kwargs.get('sub_hidden_size', (1500, 500)),
                                     eps_decay=kwargs.get('sub_eps_decay'),
                                     memory=kwargs.get('sub_ER'),
