@@ -15,9 +15,9 @@ master_hidden_size: !!python/tuple
   - 1000
   - 500
 n_sub_policies: 3
-sub_eps_decay: 2.e+4
+sub_eps_decay: 2.e+5
 sub_target_update: 1.e+3
-sub_lr: 0.00025
+sub_lr: 0.001
 sub_ER: 1000000
 sub_hidden_size: !!python/tuple
   - 1000
