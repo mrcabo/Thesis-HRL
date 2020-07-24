@@ -83,10 +83,6 @@ def train(env, model, task_list, results_path, **kwargs):
 
             model.optimize_master()
             model.optimize_sub(policy_idx.item())
-            # TODO:we could as well update all policies? after all they share a ER.
-            # for i, _ in enumerate(model.sub_policies):
-            #     model.optimize_sub(i)
-            # env.render()
             if done:
                 state = env.reset()
                 state = env.set_current_task(chosen_task)
