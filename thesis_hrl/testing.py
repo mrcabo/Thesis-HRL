@@ -65,6 +65,7 @@ def test(env, model, task_list, results_path, **kwargs):
                 master_action = model.master_policy.policy_net(state.unsqueeze(0)).max(1)[1].view(1, 1)
                 usage.record(master_action.item(), t)
                 action = model.sub_policies[master_action.item()].policy_net(state.unsqueeze(0)).max(1)[1].view(1, 1)
+                # print(f"Action taken: {action.item()}")
                 next_state, reward, done, _ = env.step(action.item())
                 ep_reward += reward
                 next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))

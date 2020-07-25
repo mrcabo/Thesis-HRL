@@ -105,37 +105,6 @@ def train(env, model, task_list, results_path, **kwargs):
     print(f"Cumulative reward: {cum_r}")
 
 
-def test(env, model, task_list, results_path, **kwargs):
-    model.load_model(results_path)
-    model.testing_mode()
-    env.render()
-    n_episodes = kwargs.get("test_episodes", 10)
-    successful_episodes = 0
-    with torch.no_grad():
-        for _ in range(n_episodes):
-            state = env.reset()
-            chosen_task = random.choice(task_list)
-            state = env.set_current_task(chosen_task)
-            state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
-            ep_reward = 0
-            for t in count():
-                master_action = model.master_policy.policy_net(state.unsqueeze(0)).max(1)[1].view(1, 1)
-                action = model.sub_policies[master_action.item()].policy_net(state.unsqueeze(0)).max(1)[1].view(1, 1)
-                next_state, reward, done, _ = env.step(action.item())
-                ep_reward += reward
-                next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
-                state = next_state
-                env.render()
-                if done:
-                    if ep_reward > 90:
-                        successful_episodes += 1
-                    print(f"Episode reward: {ep_reward}")
-                    break
-    print('Testing complete')
-    print(f"{successful_episodes}/{n_episodes} successful episodes. "
-          f"{((successful_episodes / n_episodes) * 100)}% success rate")
-
-
 if __name__ == '__main__':
     args = parse_arguments()  # vars(args)  # Turns it into a dictionary.
 
@@ -155,10 +124,6 @@ if __name__ == '__main__':
 
     my_model = HRLDQN(env.observation_space.shape[0], env.action_space.n, **hyperparam)
     my_model.print_model()
-
-    if args.test:
-        test(env, my_model, tasks_list, results_path, **hyperparam)
-    else:
-        train(env, my_model, tasks_list, results_path, **hyperparam)
+    train(env, my_model, tasks_list, results_path, **hyperparam)
 
     env.close()
