@@ -1,6 +1,6 @@
 num_cycles: 10000
 warmup_period: 200
-joint_period: 200
+joint_period: 300
 batch_size: 32
 gamma: 0.99
 eps_start: 1.0
