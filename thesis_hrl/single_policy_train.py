@@ -39,15 +39,15 @@ def train(env, model, task_list, results_path, **kwargs):
 
             # Perform one step of the optimization (on the target network)
             model.optimize_model()
+            # Update the target network, copying all weights and biases in DQN
+            if model.steps_done % model.TARGET_UPDATE == 0:
+                model.target_net.load_state_dict(model.policy_net.state_dict())
             if done:
                 if ep_reward > 90:
                     print(f"Success in ep. {i_episode}!! Ep. reward: {ep_reward}")
                 ep_rewards.append(ep_reward)
                 # plot_info(ep_rewards, 'Episode rewards', ('N. episode', 'Reward'))
                 break
-            # Update the target network, copying all weights and biases in DQN
-            if model.steps_done % model.TARGET_UPDATE == 0:
-                model.target_net.load_state_dict(model.policy_net.state_dict())
 
         if i_episode % 100 == 0:
             print(f"Episode {i_episode}")
