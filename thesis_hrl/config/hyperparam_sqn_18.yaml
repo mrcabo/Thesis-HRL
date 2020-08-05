@@ -1,0 +1,13 @@
+num_episodes: 10000
+batch_size: 32
+gamma: 0.85
+eps_start: 1.0
+eps_end: 0.1
+eps_decay: 5.e+5
+lr: 0.0003
+hidden_size: !!python/tuple
+  - 1000
+  - 500
+target_update: 1.e+3
+memory: 1000000
+test_episodes: 15
