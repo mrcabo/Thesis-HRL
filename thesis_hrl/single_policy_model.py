@@ -138,6 +138,10 @@ class QLearning:
         self.policy_net.load_state_dict(torch.load(policy_path))
         self.target_net.load_state_dict(torch.load(target_path))
 
+    def testing_mode(self):
+        self.policy_net.eval()
+        self.target_net.eval()
+
 
 def plot_info(data, path, title=None, labels=None, fig_num=None):
     plt.figure(fig_num)
