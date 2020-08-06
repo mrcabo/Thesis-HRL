@@ -139,7 +139,8 @@ class HRLDQN:
     def __init__(self, obs_space, action_space, **kwargs):
         # Hyper-parameters
         self.BATCH_SIZE = kwargs.get('batch_size', 32)
-        self.GAMMA = kwargs.get('gamma', 0.99)
+        self.M_GAMMA = kwargs.get('master_gamma', 0.99)
+        self.S_GAMMA = kwargs.get('sub_gamma', 0.99)
         self.M_TARGET_UPDATE = int(kwargs.get('master_target_update', 1e4))
         self.S_TARGET_UPDATE = int(kwargs.get('sub_target_update', 1e4))
         self.M_LEARNING_RATE = kwargs.get('master_lr', 0.00025)
@@ -169,12 +170,12 @@ class HRLDQN:
         # General ones
         print("*" * 3 + "  Shared values  " + "*" * 3)
         print(f"Batch size: {self.BATCH_SIZE}")
-        print(f"Gamma: {self.GAMMA}")
 
         # Master policy
         print("*" * 3 + "  Master policy  " + "*" * 3)
         print(f"ER length.: {self.master_policy.memory.capacity}")
         print(f"Learning rate.: {self.M_LEARNING_RATE}")
+        print(f"Gamma: {self.M_GAMMA}")
         print(f"Target net update freq.: {self.M_TARGET_UPDATE}")
         self.master_policy.print_hyperparam()
 
@@ -182,6 +183,7 @@ class HRLDQN:
         print("*" * 3 + "  Sub policies  " + "*" * 3)
         print(f"ER length.: {self.sub_policies[0].memory.capacity}")
         print(f"Learning rate.: {self.S_LEARNING_RATE}")
+        print(f"Gamma: {self.S_GAMMA}")
         print(f"Target net update freq.: {self.S_TARGET_UPDATE}")
         # for i in range(len(self.sub_policies)): # For now i think all sub policies equal so not necessary..
         self.sub_policies[0].print_hyperparam()
@@ -189,13 +191,13 @@ class HRLDQN:
         print("#" * 31)
 
     def optimize_master(self):
-        self.master_policy.optimize_model(self.BATCH_SIZE, self.GAMMA, self.loss)
+        self.master_policy.optimize_model(self.BATCH_SIZE, self.M_GAMMA, self.loss)
 
     def optimize_sub(self, idx):
         if idx < 0 or idx > len(self.sub_policies):
             raise IndexError(f"Index must be between 0 and {len(self.sub_policies)}")
         else:
-            self.sub_policies[idx].optimize_model(self.BATCH_SIZE, self.GAMMA, self.loss)
+            self.sub_policies[idx].optimize_model(self.BATCH_SIZE, self.S_GAMMA, self.loss)
 
     def testing_mode(self):
         self.master_policy.policy_net.eval()
