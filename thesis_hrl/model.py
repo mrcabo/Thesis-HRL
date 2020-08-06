@@ -152,13 +152,13 @@ class HRLDQN:
                                     lr=self.M_LEARNING_RATE,
                                     hidden_size=kwargs.get('master_hidden_size', (1500, 500)),
                                     eps_decay=kwargs.get('master_eps_decay'),
-                                    memory=kwargs.get('master_ER'),
+                                    memory=int(kwargs.get('master_ER')),
                                     **kwargs)
         self.sub_policies = [Policy(obs_space, action_space, self.device,
                                     lr=self.S_LEARNING_RATE,
                                     hidden_size=kwargs.get('sub_hidden_size', (1500, 500)),
                                     eps_decay=kwargs.get('sub_eps_decay'),
-                                    memory=kwargs.get('sub_ER'),
+                                    memory=int(kwargs.get('sub_ER')),
                                     **kwargs) for _ in range(kwargs.get('n_sub_policies', 3))]
         self.loss = nn.MSELoss()
         # Others
