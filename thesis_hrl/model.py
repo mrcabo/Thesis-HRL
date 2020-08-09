@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+from household_env.envs.house_env import Tasks
 
 from thesis_hrl.utils import ReplayMemory, Transition
 
@@ -52,12 +53,10 @@ class Policy:
         # Others
         self.device = device
         self.steps_done = 0
-        self.obs_space = obs_space
         self.action_space = action_space
         self.EPS_START = kwargs.get('eps_start', 1)
         self.EPS_END = kwargs.get('eps_end', 0.1)
         self.EPS_DECAY = kwargs.get('eps_decay', 2e5)
-        self.memory = ReplayMemory(kwargs.get('memory'))
 
     def reset(self):
         self.policy_net.apply(reset_weights)
@@ -65,16 +64,10 @@ class Policy:
         self.target_net.eval()
         self.steps_done = 0
 
-    def push_to_memory(self, *args):
-        self.memory.push(*args)
-
-    def reset_memory(self):
-        self.memory.reset()
-
     def select_action(self, state):
         sample = random.random()
-        eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
-                        math.exp(-1. * self.steps_done / self.EPS_DECAY)
+        eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * math.exp(
+            -1. * self.steps_done / self.EPS_DECAY)
         # if self.steps_done % 500 == 0 and eps_threshold > 0.2:
         #     print(f"Epsilon threshold: {eps_threshold}")
         self.steps_done += 1
@@ -84,10 +77,10 @@ class Policy:
         else:
             return torch.tensor([[random.randrange(self.action_space)]], device=self.device, dtype=torch.long)
 
-    def optimize_model(self, batch_size, gamma, loss_func):
-        if len(self.memory) < batch_size:
+    def optimize_model(self, memory, batch_size, gamma, loss_func):
+        if len(memory) < batch_size:
             return
-        transitions = self.memory.sample(batch_size)
+        transitions = memory.sample(batch_size)
         # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
         # detailed explanation). This converts batch-array of Transitions
         # to Transition of batch-arrays.
@@ -146,20 +139,24 @@ class HRLDQN:
         self.M_LEARNING_RATE = kwargs.get('master_lr', 0.00025)
         self.S_LEARNING_RATE = kwargs.get('sub_lr', 0.00025)
         # Model
+        self.master_ER = ReplayMemory(int(kwargs.get('master_ER', 2e3)))
+        self.task_ERs = {}  # Creates a dictionary containing an ER for each task
+        for t in Tasks:
+            self.task_ERs[t.name] = ReplayMemory(int(kwargs.get('task_ER', 1e5)))
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        master_actions = kwargs.get('n_sub_policies', 3)
-        self.master_policy = Policy(obs_space, master_actions, self.device,
+        n_sub_policies = kwargs.get('n_sub_policies', 3)
+        self.master_policy = Policy(obs_space, n_sub_policies, self.device,
                                     lr=self.M_LEARNING_RATE,
                                     hidden_size=kwargs.get('master_hidden_size', (1500, 500)),
                                     eps_decay=kwargs.get('master_eps_decay'),
-                                    memory=int(kwargs.get('master_ER')),
+                                    memory=kwargs.get('master_ER'),
                                     **kwargs)
         self.sub_policies = [Policy(obs_space, action_space, self.device,
                                     lr=self.S_LEARNING_RATE,
                                     hidden_size=kwargs.get('sub_hidden_size', (1500, 500)),
                                     eps_decay=kwargs.get('sub_eps_decay'),
-                                    memory=int(kwargs.get('sub_ER')),
-                                    **kwargs) for _ in range(kwargs.get('n_sub_policies', 3))]
+                                    memory=kwargs.get('sub_ER'),
+                                    **kwargs) for _ in range(n_sub_policies)]
         self.loss = nn.MSELoss()
         # Others
         self.obs_space = obs_space
@@ -170,10 +167,11 @@ class HRLDQN:
         # General ones
         print("*" * 3 + "  Shared values  " + "*" * 3)
         print(f"Batch size: {self.BATCH_SIZE}")
+        print(f"Task ER length.: {self.task_ERs[list(self.task_ERs.keys())[0]].capacity}")
 
         # Master policy
         print("*" * 3 + "  Master policy  " + "*" * 3)
-        print(f"ER length.: {self.master_policy.memory.capacity}")
+        print(f"ER length.: {self.master_ER.capacity}")
         print(f"Learning rate.: {self.M_LEARNING_RATE}")
         print(f"Gamma: {self.M_GAMMA}")
         print(f"Target net update freq.: {self.M_TARGET_UPDATE}")
@@ -181,7 +179,6 @@ class HRLDQN:
 
         # Sub-policies
         print("*" * 3 + "  Sub policies  " + "*" * 3)
-        print(f"ER length.: {self.sub_policies[0].memory.capacity}")
         print(f"Learning rate.: {self.S_LEARNING_RATE}")
         print(f"Gamma: {self.S_GAMMA}")
         print(f"Target net update freq.: {self.S_TARGET_UPDATE}")
@@ -191,13 +188,13 @@ class HRLDQN:
         print("#" * 31)
 
     def optimize_master(self):
-        self.master_policy.optimize_model(self.BATCH_SIZE, self.M_GAMMA, self.loss)
+        self.master_policy.optimize_model(self.master_ER, self.BATCH_SIZE, self.M_GAMMA, self.loss)
 
-    def optimize_sub(self, idx):
+    def optimize_sub(self, task, idx):
         if idx < 0 or idx > len(self.sub_policies):
             raise IndexError(f"Index must be between 0 and {len(self.sub_policies)}")
         else:
-            self.sub_policies[idx].optimize_model(self.BATCH_SIZE, self.S_GAMMA, self.loss)
+            self.sub_policies[idx].optimize_model(self.task_ERs[task.name], self.BATCH_SIZE, self.S_GAMMA, self.loss)
 
     def testing_mode(self):
         self.master_policy.policy_net.eval()

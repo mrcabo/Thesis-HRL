@@ -32,27 +32,28 @@ def train(env, model, task_list, results_path, **kwargs):
     J = kwargs.get('joint_period')
 
     for i_cycle in range(kwargs.get('num_cycles')):
+        # Sample a task and initialize environment
         state = env.reset()
         chosen_task = random.choice(task_list)
         print(f"Chosen task: {chosen_task.name}")  # DEBUG
         state = env.set_current_task(chosen_task)
         state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
         cycle_reward = 0
-        # Sample task from the task distribution (possibility)
-        model.master_policy.reset()  # Reset :math:`\theta`
-        model.master_policy.reset_memory()
+        # Reset master policy
+        model.master_policy.reset()
+        model.master_ER.reset()
 
         # Warmup period
         for w in range(W):
-            policy_idx = model.master_policy.select_action(state)  # Chooses a policy
-            policy_action = model.sub_policies[policy_idx.item()].policy_net(state.unsqueeze(0)).max(1)[1].view(1, 1)
-            next_state, reward, done, _ = env.step(policy_action.item())
+            master_action = model.master_policy.select_action(state)  # Chooses a policy
+            primitive_action = model.sub_policies[master_action.item()].policy_net(state).max(0)[1].view(1, 1)
+            next_state, reward, done, _ = env.step(primitive_action.item())
             # print(f"Primitive action taken: {policy_action.item()}")
             cycle_reward += reward
             next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
-            model.master_policy.push_to_memory(state.unsqueeze(0), policy_idx, next_state.unsqueeze(0), reward, done)
+            model.master_ER.push(state.unsqueeze(0), master_action, next_state.unsqueeze(0), reward, done)
             state = next_state
 
             model.optimize_master()
@@ -68,21 +69,21 @@ def train(env, model, task_list, results_path, **kwargs):
 
         # Joint update period
         for j in range(J):
-            policy_idx = model.master_policy.select_action(state)  # Chooses a policy
-            policy_action = model.sub_policies[policy_idx.item()].select_action(state)
-            next_state, reward, done, _ = env.step(policy_action.item())
+            master_action = model.master_policy.select_action(state)  # Chooses a policy
+            primitive_action = model.sub_policies[master_action.item()].select_action(state)
+            next_state, reward, done, _ = env.step(primitive_action.item())
             # print(f"Primitive action taken: {policy_action.item()}")
             cycle_reward += reward
             next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
-            model.master_policy.push_to_memory(state.unsqueeze(0), policy_idx, next_state.unsqueeze(0), reward, done)
-            model.sub_policies[policy_idx.item()].push_to_memory(state.unsqueeze(0), policy_action,
-                                                                 next_state.unsqueeze(0), reward, done)
+            model.master_ER.push(state.unsqueeze(0), master_action, next_state.unsqueeze(0), reward, done)
+            model.task_ERs[chosen_task.name].push(state.unsqueeze(0), primitive_action, next_state.unsqueeze(0), reward, done)
+
             state = next_state
 
             model.optimize_master()
-            model.optimize_sub(policy_idx.item())
+            model.optimize_sub(chosen_task, master_action.item())
             if done:
                 state = env.reset()
                 state = env.set_current_task(chosen_task)
