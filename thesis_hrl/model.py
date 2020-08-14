@@ -140,9 +140,8 @@ class HRLDQN:
         self.S_LEARNING_RATE = kwargs.get('sub_lr', 0.00025)
         # Model
         self.master_ER = ReplayMemory(int(kwargs.get('master_ER', 2e3)))
-        self.task_ERs = {}  # Creates a dictionary containing an ER for each task
-        for t in Tasks:
-            self.task_ERs[t.name] = ReplayMemory(int(kwargs.get('task_ER', 1e5)))
+        self.ER_tea = ReplayMemory(int(kwargs.get('task_ER', 1e5)))
+        self.ER_soup = ReplayMemory(int(kwargs.get('task_ER', 1e5)))
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         n_sub_policies = kwargs.get('n_sub_policies', 3)
         self.master_policy = Policy(obs_space, n_sub_policies, self.device,
@@ -165,7 +164,7 @@ class HRLDQN:
         # General ones
         print("*" * 3 + "  Shared values  " + "*" * 3)
         print(f"Batch size: {self.BATCH_SIZE}")
-        print(f"Task ER length.: {self.task_ERs[list(self.task_ERs.keys())[0]].capacity}")
+        print(f"Task ER length.: {self.ER_tea.capacity}")
 
         # Master policy
         print("*" * 3 + "  Master policy  " + "*" * 3)
@@ -188,11 +187,11 @@ class HRLDQN:
     def optimize_master(self):
         self.master_policy.optimize_model(self.master_ER, self.BATCH_SIZE, self.M_GAMMA, self.loss)
 
-    def optimize_sub(self, task, idx):
+    def optimize_sub(self, memory, idx):
         if idx < 0 or idx > len(self.sub_policies):
             raise IndexError(f"Index must be between 0 and {len(self.sub_policies)}")
         else:
-            self.sub_policies[idx].optimize_model(self.task_ERs[task.name], self.BATCH_SIZE, self.S_GAMMA, self.loss)
+            self.sub_policies[idx].optimize_model(memory, self.BATCH_SIZE, self.S_GAMMA, self.loss)
 
     def testing_mode(self):
         self.master_policy.policy_net.eval()
