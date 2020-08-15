@@ -32,7 +32,6 @@ def train(env, model, task_list, results_path, **kwargs):
     J = kwargs.get('joint_period')
 
     for i_cycle in range(kwargs.get('num_cycles')):
-        print(f"Cycle {i_cycle}")
         # Sample a task and initialize environment
         state = env.reset()
         chosen_task = random.choice(task_list)
@@ -79,19 +78,12 @@ def train(env, model, task_list, results_path, **kwargs):
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
             model.master_ER.push(state.unsqueeze(0), master_action, next_state.unsqueeze(0), reward, done)
-            if chosen_task == Tasks.MAKE_TEA:
-                memory = model.ER_tea
-            elif chosen_task == Tasks.MAKE_SOUP:
-                memory = model.ER_soup
-            else:
-                raise ValueError("what?")
-
-            memory.push(state.unsqueeze(0), primitive_action, next_state.unsqueeze(0), reward, done)
+            model.task_ERs[chosen_task.name].push(state.unsqueeze(0), primitive_action, next_state.unsqueeze(0), reward, done)
 
             state = next_state
 
             model.optimize_master()
-            model.optimize_sub(memory, master_action.item())
+            model.optimize_sub(chosen_task, master_action.item())
             if done:
                 state = env.reset()
                 state = env.set_current_task(chosen_task)
