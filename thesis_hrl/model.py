@@ -188,11 +188,11 @@ class HRLDQN:
     def optimize_master(self):
         self.master_policy.optimize_model(self.master_ER, self.BATCH_SIZE, self.M_GAMMA, self.loss)
 
-    def optimize_sub(self, task, idx):
+    def optimize_sub(self, memory, idx):
         if idx < 0 or idx > len(self.sub_policies):
             raise IndexError(f"Index must be between 0 and {len(self.sub_policies)}")
         else:
-            self.sub_policies[idx].optimize_model(self.task_ERs[task.name], self.BATCH_SIZE, self.S_GAMMA, self.loss)
+            self.sub_policies[idx].optimize_model(memory, self.BATCH_SIZE, self.S_GAMMA, self.loss)
 
     def testing_mode(self):
         self.master_policy.policy_net.eval()

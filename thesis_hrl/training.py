@@ -83,7 +83,7 @@ def train(env, model, task_list, results_path, **kwargs):
             state = next_state
 
             model.optimize_master()
-            model.optimize_sub(chosen_task, master_action.item())
+            model.optimize_sub(model.task_ERs[chosen_task.name], master_action.item())
             if done:
                 state = env.reset()
                 state = env.set_current_task(chosen_task)
