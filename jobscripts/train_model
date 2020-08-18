@@ -3,7 +3,7 @@
 #SBATCH --time=23:55:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:v100:1
-#SBATCH --mem=64GB
+#SBATCH --mem=32GB
 #SBATCH --output=Job-%j-q_learning.log
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=d.cabo.golvano@student.rug.nl
