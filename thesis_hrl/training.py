@@ -54,7 +54,6 @@ def train(env, model, task_list, results_path, **kwargs):
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
             model.master_ER.push(state.unsqueeze(0), master_action, next_state.unsqueeze(0), reward, done)
-            model.task_ERs[chosen_task.name].push(state.unsqueeze(0), primitive_action, next_state.unsqueeze(0), reward, done)
             state = next_state
 
             model.optimize_master()
