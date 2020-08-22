@@ -159,6 +159,7 @@ class HRLDQN:
         # Others
         self.obs_space = obs_space
         self.action_space = action_space
+        self.prev_trained = []  # List of previously trained tasks
 
     def print_model(self):
         print("#" * 5 + "  MODEL DESCRIPTION  " + "#" * 5)
@@ -193,6 +194,10 @@ class HRLDQN:
             raise IndexError(f"Index must be between 0 and {len(self.sub_policies)}")
         else:
             self.sub_policies[idx].optimize_model(memory, self.BATCH_SIZE, self.S_GAMMA, self.loss)
+
+    def optimize_all_subs(self, memory):
+        for sub_policy in self.sub_policies:
+            sub_policy.optimize_model(memory, self.BATCH_SIZE, self.S_GAMMA, self.loss)
 
     def testing_mode(self):
         self.master_policy.policy_net.eval()

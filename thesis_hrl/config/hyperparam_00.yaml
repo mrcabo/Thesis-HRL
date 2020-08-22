@@ -7,6 +7,8 @@ eps_end: 0.1
 test_episodes: 15
 num_tasks: 2
 task_ER: 1.e+5
+retrain_master_episodes: 10000
+remind_freq: 10
 
 master_eps_decay: 650
 master_target_update: 20
