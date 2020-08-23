@@ -2,8 +2,6 @@ num_cycles: 10000
 warmup_period: 2000
 joint_period: 200
 batch_size: 32
-eps_start: 1.0
-eps_end: 0.1
 test_episodes: 15
 num_tasks: 2
 task_ER: 1.e+5
@@ -11,6 +9,8 @@ retrain_master_episodes: 10000
 remind_freq: 10
 
 master_eps_decay: 650
+master_eps_start: 0.75
+master_eps_end: 0.2
 master_target_update: 20
 master_lr: 0.01
 master_gamma: 0.9
@@ -20,6 +20,8 @@ master_hidden_size: !!python/tuple
   - 500
 n_sub_policies: 3
 sub_eps_decay: 5.e+5
+sub_eps_start: 0.98
+sub_eps_end: 0.11
 sub_target_update: 1.e+3
 sub_lr: 0.00025
 sub_gamma: 0.85
