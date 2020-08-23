@@ -251,6 +251,16 @@ class HRLDQN:
             sub_policy.policy_net.load_state_dict(torch.load(policy_path))
             sub_policy.target_net.load_state_dict(torch.load(target_path))
 
+    def save_task_memories(self, path):
+        for key, memoy in self.task_ERs.items():
+            pathfile = path / (key + '.pickle')
+            torch.save(memoy, pathfile)
+
+    def load_task_memories(self, path):
+        for key in self.task_ERs.keys():
+            pathfile = path / (key + '.pickle')
+            self.task_ERs[key] = torch.load(pathfile)
+
 
 def plot_info(data, path, title=None, labels=None, fig_num=None):
     plt.figure(fig_num)

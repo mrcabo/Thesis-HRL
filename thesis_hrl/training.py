@@ -102,6 +102,7 @@ def train(env, model, task_list, results_path, **kwargs):
             plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward)
 
     cum_r = plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward)
+    model.save_task_memories(results_path)
     print('Training complete')
     print(f"Cumulative reward: {cum_r}")
 
