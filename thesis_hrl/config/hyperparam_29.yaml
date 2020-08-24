@@ -1,5 +1,5 @@
 num_cycles: 10000
-warmup_period: 500
+warmup_period: 1000
 joint_period: 500
 batch_size: 32
 test_episodes: 15
