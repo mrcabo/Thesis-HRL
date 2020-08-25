@@ -102,6 +102,7 @@ def train(env, model, task_list, results_path, **kwargs):
         train_new_task(env, model, task_list, results_path, cycle_rewards, **kwargs)
         remind_old_tasks(model)
     cum_r = plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward)
+    model.save_task_memories(results_path)
     print('Training complete')
     print(f"Cumulative reward: {cum_r}")
 
@@ -131,6 +132,7 @@ if __name__ == '__main__':
         raise Exception("The necessary argument --weights must indicate the name of a real directory that contains "
                         "the pre-trained weights.")
     my_model.load_model(results_path.parent / args.weights)
+    my_model.load_task_memories(results_path.parent / args.weights)
     my_model.prev_trained = [Tasks.MAKE_TEA, Tasks.MAKE_SOUP]
     # Train model for the new task
     train(env, my_model, tasks_list, results_path, **hyperparam)
