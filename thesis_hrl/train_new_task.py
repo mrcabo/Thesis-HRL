@@ -25,7 +25,7 @@ if __name__ == '__main__':
     # NOTE: pre-trained weights should be copied to results_path
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.MAKE_PASTA]
+    tasks_list = [Tasks.CLEAN_STOVE]
     my_model = HRLDQN(env.observation_space.shape[0], env.action_space.n, **hyperparam)
     my_model.print_model()
 
