@@ -72,7 +72,7 @@ if __name__ == '__main__':
         Path.mkdir(results_path, parents=True)
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.CLEAN_STOVE]
+    tasks_list = [Tasks.MAKE_PASTA]
     env.set_current_task(tasks_list[0])
 
     my_model = QLearning(env.observation_space.shape[0], env.action_space.n, **hyperparam)
