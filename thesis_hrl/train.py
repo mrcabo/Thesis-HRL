@@ -28,16 +28,21 @@ def train(env, model, task_list, results_path, **kwargs):
     filename_ep_reward = results_path / 'Episode rewards.png'
     filename_cum_reward = results_path / 'Cumulative rewards.png'
     ep_rewards = []
+    prev_task = None
     for i_episode in range(kwargs.get('num_episodes')):
         # Sample a task and initialize environment
         chosen_task = random.choice(task_list)
         print(f"Chosen task: {chosen_task.name}")  # DEBUG
+        if prev_task != chosen_task:
+            model.master_policy.reset()
+        prev_task = chosen_task
         # Train on ERs
         for i in range(kwargs.get('train_iters')):
-            if len(model.master_ER) < 1:
+            if len(model.master_ERs[chosen_task.name]) < 1:
                 break
-            model.optimize_master()
-            model.optimize_sub(model.task_ERs[chosen_task.name], model.master_ER.sample(1)[0].action.item())
+            model.optimize_master(model.master_ERs[chosen_task.name])
+            idx = model.master_ERs[chosen_task.name].sample(1)[0].action.item()
+            model.optimize_sub(model.task_ERs[chosen_task.name], idx)
             model.master_policy.updates_done += 1
             for policy in model.sub_policies:
                 policy.updates_done += 1
@@ -60,9 +65,10 @@ def train(env, model, task_list, results_path, **kwargs):
             next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
-            model.master_ER.push(state.unsqueeze(0), master_action, next_state.unsqueeze(0), reward, done)
-            model.task_ERs[chosen_task.name].push(state.unsqueeze(0), primitive_action, next_state.unsqueeze(0), reward,
-                                                  done)
+            model.master_ERs[chosen_task.name].push(state.unsqueeze(0), master_action,
+                                                   next_state.unsqueeze(0), reward, done)
+            model.task_ERs[chosen_task.name].push(state.unsqueeze(0), primitive_action,
+                                                  next_state.unsqueeze(0), reward, done)
             state = next_state
             if done:
                 if ep_reward > 90:
