@@ -53,6 +53,7 @@ class Policy:
         # Others
         self.device = device
         self.steps_done = 0
+        self.updates_done = 0
         self.action_space = action_space
         self.EPS_START = kwargs.get('eps_start', 1)
         self.EPS_END = kwargs.get('eps_end', 0.1)
