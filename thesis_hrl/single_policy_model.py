@@ -29,6 +29,23 @@ class MLP(nn.Module):
         return qval
 
 
+class SigmoidMLP(nn.Module):
+    def __init__(self, state_size, action_size, **kwargs):
+        h = kwargs.get('hidden_size')
+        if len(h) != 1 or h[0] <= 0:
+            raise Exception("A tuple of size 2 must be provided with non-negative values")
+        super(SigmoidMLP, self).__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(state_size, h[0]),
+            nn.Sigmoid(),
+            nn.Linear(h[0], action_size)
+        )
+
+    def forward(self, x):
+        qval = self.fc(x)
+        return qval
+
+
 class QLearning:
     def __init__(self, obs_space, action_space, **kwargs):
         # Hyper-parameters
@@ -42,8 +59,8 @@ class QLearning:
         self.ER_LENGTH = int(kwargs.get('memory'))
         # Model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.policy_net = MLP(obs_space, action_space, **kwargs).to(self.device)
-        self.target_net = MLP(obs_space, action_space, **kwargs).to(self.device)
+        self.policy_net = SigmoidMLP(obs_space, action_space, **kwargs).to(self.device)
+        self.target_net = SigmoidMLP(obs_space, action_space, **kwargs).to(self.device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
         self.optimizer = optim.RMSprop(self.policy_net.parameters(), lr=self.LEARNING_RATE)
@@ -137,6 +154,10 @@ class QLearning:
         target_path = path / 'target_net.pt'
         self.policy_net.load_state_dict(torch.load(policy_path))
         self.target_net.load_state_dict(torch.load(target_path))
+
+    def testing_mode(self):
+        self.policy_net.eval()
+        self.target_net.eval()
 
 
 def plot_info(data, path, title=None, labels=None, fig_num=None):
