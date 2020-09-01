@@ -38,14 +38,15 @@ def train(env, model, task_list, results_path, **kwargs):
         prev_task = chosen_task
         # Train on ERs
         if len(model.master_ERs[chosen_task.name]) > 0:
-            for i in range(kwargs.get('train_iters')):
+            for i in range(kwargs.get('train_iters_M')):
                 model.optimize_master(model.master_ERs[chosen_task.name])
-                idx = model.master_ERs[chosen_task.name].sample(1)[0].action.item()
-                model.optimize_sub(model.task_ERs[chosen_task.name], idx)
                 model.master_policy.updates_done += 1
-                model.sub_policies[idx].updates_done += 1
                 if model.master_policy.updates_done % model.M_TARGET_UPDATE == 0:
                     model.master_policy.target_net.load_state_dict(model.master_policy.policy_net.state_dict())
+            for i in range(kwargs.get('train_iters')):
+                idx = model.master_ERs[chosen_task.name].sample(1)[0].action.item()
+                model.optimize_sub(model.task_ERs[chosen_task.name], idx)
+                model.sub_policies[idx].updates_done += 1
                 for policy in model.sub_policies:
                     if policy.updates_done % model.S_TARGET_UPDATE == 0:
                         policy.target_net.load_state_dict(policy.policy_net.state_dict())

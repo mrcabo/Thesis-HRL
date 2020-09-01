@@ -261,6 +261,9 @@ class HRLDQN:
         for key, memoy in self.task_ERs.items():
             pathfile = path / (key + '.pickle')
             torch.save(memoy, pathfile)
+        for key, memoy in self.master_ERs.items():
+            pathfile = path / ('M_' + key + '.pickle')
+            torch.save(memoy, pathfile)
 
     def load_task_memories(self, path):
         for key in self.task_ERs.keys():
