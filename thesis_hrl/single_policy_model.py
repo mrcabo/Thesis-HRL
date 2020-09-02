@@ -59,8 +59,8 @@ class QLearning:
         self.ER_LENGTH = int(kwargs.get('memory'))
         # Model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.policy_net = SigmoidMLP(obs_space, action_space, **kwargs).to(self.device)
-        self.target_net = SigmoidMLP(obs_space, action_space, **kwargs).to(self.device)
+        self.policy_net = MLP(obs_space, action_space, **kwargs).to(self.device)
+        self.target_net = MLP(obs_space, action_space, **kwargs).to(self.device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
         self.optimizer = optim.RMSprop(self.policy_net.parameters(), lr=self.LEARNING_RATE)
@@ -68,6 +68,7 @@ class QLearning:
         self.memory = ReplayMemory(self.ER_LENGTH)
         # Others
         self.steps_done = 0
+        self.updates_done = 0
         self.obs_space = obs_space
         self.action_space = action_space
 
@@ -75,8 +76,8 @@ class QLearning:
         sample = random.random()
         eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
                         math.exp(-1. * self.steps_done / self.EPS_DECAY)
-        # if self.steps_done % 500 == 0 and eps_threshold > 0.2:
-        #     print(f"Epsilon threshold: {eps_threshold}")
+        if self.steps_done % 1000 == 0 and eps_threshold > 0.2:
+            print(f"Epsilon threshold: {eps_threshold}")
         self.steps_done += 1
         if sample > eps_threshold:
             with torch.no_grad():
@@ -127,6 +128,7 @@ class QLearning:
         # for param in self.policy_net.parameters():
         #     param.grad.data.clamp_(-1, 1)  # TODO: necessary?
         self.optimizer.step()
+        self.updates_done += 1
 
     def print_hyperparam(self):
         print(str("#" * 5 + "  HYPER-PARAMETERS  " + "#" * 5))

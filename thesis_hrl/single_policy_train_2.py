@@ -1,3 +1,4 @@
+import math
 import random
 from itertools import count
 from pathlib import Path
@@ -15,13 +16,32 @@ from thesis_hrl.training import plot_and_save
 
 
 def train(env, model, task_list, results_path, **kwargs):
+    """
+    Trains the model and then collects experience
+    Args:
+        env:
+        model:
+        task_list:
+        results_path:
+        **kwargs:
+
+    Returns:
+
+    """
     filename_ep_reward = results_path / 'Episode rewards.png'
     filename_cum_reward = results_path / 'Cumulative rewards.png'
     ep_rewards = []
     for i_episode in range(kwargs.get('num_episodes')):
-        state = env.reset()
         chosen_task = random.choice(task_list)
-        print(f"Chosen task: {chosen_task.name}")  # DEBUG
+        # print(f"Chosen task: {chosen_task.name}")  # DEBUG
+        # Learning
+        for i in range(kwargs.get('train_iters')):
+            model.optimize_model()
+            if model.updates_done % model.TARGET_UPDATE == 0:
+                model.target_net.load_state_dict(model.policy_net.state_dict())
+
+        # Getting experiences
+        env.reset()
         state = env.set_current_task(chosen_task)
         state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
         ep_reward = 0
@@ -36,19 +56,12 @@ def train(env, model, task_list, results_path, **kwargs):
 
             model.memory.push(state.unsqueeze(0), action, next_state.unsqueeze(0), reward, done)
             state = next_state
-
-            # Perform one step of the optimization (on the target network)
-            model.optimize_model()
-            # Update the target network, copying all weights and biases in DQN
-            if model.steps_done % model.TARGET_UPDATE == 0:
-                model.target_net.load_state_dict(model.policy_net.state_dict())
             if done:
                 if ep_reward > 90:
                     print(f"Success in ep. {i_episode}!! Ep. reward: {ep_reward}")
                 ep_rewards.append(ep_reward)
                 # plot_info(ep_rewards, 'Episode rewards', ('N. episode', 'Reward'))
                 break
-
         if i_episode % 100 == 0:
             print(f"Episode {i_episode}")
             plot_and_save(model, ep_rewards, results_path, filename_ep_reward, filename_cum_reward)

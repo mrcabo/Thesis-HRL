@@ -14,7 +14,7 @@ from thesis_hrl.config import CONF_DIR
 
 
 def plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward):
-    plot_info(np.array(cycle_rewards), filename_ep_reward, 'Cycle rewards', ('Cycle', 'Reward'), fig_num=1)
+    plot_info(np.array(cycle_rewards), filename_ep_reward, 'Episode rewards', ('Cycle', 'Reward'), fig_num=1)
     # Cumulative reward
     cum_reward = [cycle_rewards[0]]
     for val in cycle_rewards[1:]:
