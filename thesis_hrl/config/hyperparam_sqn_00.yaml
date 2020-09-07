@@ -1,14 +1,14 @@
 num_episodes: 10000
 batch_size: 32
-train_iters: 200
-gamma: 0.85
+train_iters: 100
+gamma: 0.9
 eps_start: 1.0
 eps_end: 0.1
-eps_decay: 2500
-lr: 0.00025
+eps_decay: 1.e+6
+lr: 0.0005
 hidden_size: !!python/tuple
-  - 1000
-  - 500
+  - 600
+  - 300
 target_update: 1.e+3
 memory: 1.e+5
 test_episodes: 15

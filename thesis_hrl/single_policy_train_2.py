@@ -35,10 +35,11 @@ def train(env, model, task_list, results_path, **kwargs):
         chosen_task = random.choice(task_list)
         # print(f"Chosen task: {chosen_task.name}")  # DEBUG
         # Learning
-        for i in range(kwargs.get('train_iters')):
-            model.optimize_model()
-            if model.updates_done % model.TARGET_UPDATE == 0:
-                model.target_net.load_state_dict(model.policy_net.state_dict())
+        if i_episode > 0:
+            for i in range(kwargs.get('train_iters')):
+                model.optimize_model()
+                if model.updates_done % model.TARGET_UPDATE == 0:
+                    model.target_net.load_state_dict(model.policy_net.state_dict())
 
         # Getting experiences
         env.reset()
