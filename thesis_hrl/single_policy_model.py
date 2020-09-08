@@ -31,14 +31,16 @@ class MLP(nn.Module):
 
 class SigmoidMLP(nn.Module):
     def __init__(self, state_size, action_size, **kwargs):
-        h = kwargs.get('hidden_size')
-        if len(h) != 1 or h[0] <= 0:
+        h = kwargs.get('hidden_size', (1500, 500))
+        if len(h) != 2 or h[0] <= 0 or h[1] <= 0:
             raise Exception("A tuple of size 2 must be provided with non-negative values")
         super(SigmoidMLP, self).__init__()
         self.fc = nn.Sequential(
             nn.Linear(state_size, h[0]),
             nn.Sigmoid(),
-            nn.Linear(h[0], action_size)
+            nn.Linear(h[0], h[1]),
+            nn.Sigmoid(),
+            nn.Linear(h[1], action_size)
         )
 
     def forward(self, x):
