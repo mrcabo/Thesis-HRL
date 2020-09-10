@@ -55,6 +55,7 @@ class Policy:
         self.steps_done = 0
         self.updates_done = 0
         self.action_space = action_space
+        self.rand_action = True
         self.EPS_START = kwargs.get('eps_start', 1)
         self.EPS_END = kwargs.get('eps_end', 0.1)
         self.EPS_DECAY = kwargs.get('eps_decay', 2e5)
@@ -73,9 +74,11 @@ class Policy:
         #     print(f"Epsilon threshold: {eps_threshold}")
         self.steps_done += 1
         if sample > eps_threshold:
+            self.rand_action = False
             with torch.no_grad():
                 return self.policy_net(state).max(0)[1].view(1, 1)
         else:
+            self.rand_action = True
             return torch.tensor([[random.randrange(self.action_space)]], device=self.device, dtype=torch.long)
 
     def optimize_model(self, memory, batch_size, gamma, loss_func):
