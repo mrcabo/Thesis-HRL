@@ -8,7 +8,7 @@ import torch
 import yaml
 from household_env.envs.house_env import Tasks
 
-from thesis_hrl.model import HRLDQN, plot_info
+from thesis_hrl.model import HRLDQN, plot_info, calc_eps_threshold
 from thesis_hrl.utils import parse_arguments, normalize_values
 from thesis_hrl.config import CONF_DIR
 
@@ -50,17 +50,23 @@ def train_master(env, model, task_list, results_path, **kwargs):
         for t in count():
             master_action = model.master_policy.select_action(state)  # Chooses a policy
             primitive_action = model.sub_policies[master_action.item()].policy_net(state).max(0)[1].view(1, 1)
+            # Debug, print eps_threshold
+            eps_threshold = calc_eps_threshold(model.master_policy)
+            if model.master_policy.steps_done % 500 == 0:
+                print(f"Epsilon threshold: {eps_threshold}")
+
             next_state, reward, done, _ = env.step(primitive_action.item())
             ep_reward += reward
             next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
 
-            model.master_ER.push(state.unsqueeze(0), master_action, next_state.unsqueeze(0), reward, done)
+            model.master_ERs[chosen_task.name].push(state.unsqueeze(0), master_action, next_state.unsqueeze(0), reward,
+                                                    done)
             state = next_state
 
             # Perform one step of the optimization (on the target network)
-            model.optimize_master()
+            model.optimize_master(model.master_ERs[chosen_task.name])
             # Update the target network, copying all weights and biases in DQN
             if model.master_policy.steps_done % model.M_TARGET_UPDATE == 0:
                 model.master_policy.target_net.load_state_dict(model.master_policy.policy_net.state_dict())

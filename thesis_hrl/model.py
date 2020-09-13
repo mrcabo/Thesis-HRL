@@ -42,6 +42,12 @@ class MLP(nn.Module):
         return qval
 
 
+def calc_eps_threshold(policy):
+    eps_threshold = policy.EPS_END + (policy.EPS_START - policy.EPS_END) * math.exp(
+        -1. * policy.steps_done / policy.EPS_DECAY)
+    return eps_threshold
+
+
 class Policy:
     def __init__(self, obs_space, action_space, device, **kwargs):
         # Net
@@ -68,10 +74,7 @@ class Policy:
 
     def select_action(self, state):
         sample = random.random()
-        eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * math.exp(
-            -1. * self.steps_done / self.EPS_DECAY)
-        # if self.steps_done % 500 == 0 and eps_threshold > 0.2:
-        #     print(f"Epsilon threshold: {eps_threshold}")
+        eps_threshold = calc_eps_threshold(self)
         self.steps_done += 1
         if sample > eps_threshold:
             self.rand_action = False
