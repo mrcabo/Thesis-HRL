@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#SBATCH --time=3:55:00
+#SBATCH --time=23:55:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:v100:1
-#SBATCH --mem=20GB
+#SBATCH --mem=32GB
 #SBATCH --output=Job-%j-q_learning.log
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=d.cabo.golvano@student.rug.nl
@@ -25,4 +25,4 @@ source venv/bin/activate
 hp="hyperparam_sqn_01.yaml"
 echo "Starting execution for $hp"
 
-python thesis_hrl/single_policy_train.py --hyperparam $hp
+python -u thesis_hrl/single_policy_train.py --hyperparam $hp

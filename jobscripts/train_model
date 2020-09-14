@@ -25,4 +25,4 @@ source venv/bin/activate
 hp="hyperparam_01.yaml"
 echo "Starting execution for $hp"
 
-python thesis_hrl/training.py --hyperparam $hp
+python -u thesis_hrl/training.py --hyperparam $hp

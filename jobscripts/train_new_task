@@ -26,4 +26,4 @@ hp="hyperparam_02.yaml"
 weights="hyperparam_01"
 echo "Starting execution for $hp"
 
-python thesis_hrl/train_new_task.py --hyperparam $hp --weights $weights
+python -u thesis_hrl/train_new_task.py --hyperparam $hp --weights $weights
