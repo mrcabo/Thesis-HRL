@@ -146,9 +146,10 @@ class HRLDQN:
         self.M_LEARNING_RATE = kwargs.get('master_lr', 0.00025)
         self.S_LEARNING_RATE = kwargs.get('sub_lr', 0.00025)
         # Model
-        self.master_ER = ReplayMemory(int(kwargs.get('master_ER', 2e3)))
+        self.master_ERs = {}  # Creates a dictionary containing an ER for each task
         self.task_ERs = {}  # Creates a dictionary containing an ER for each task
         for t in Tasks:
+            self.master_ERs[t.name] = ReplayMemory(int(kwargs.get('master_ER', 1e3)))
             self.task_ERs[t.name] = ReplayMemory(int(kwargs.get('task_ER', 1e5)))
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         n_sub_policies = kwargs.get('n_sub_policies', 3)
@@ -181,7 +182,7 @@ class HRLDQN:
 
         # Master policy
         print("*" * 3 + "  Master policy  " + "*" * 3)
-        print(f"ER length.: {self.master_ER.capacity}")
+        print(f"ER length.: {self.master_ERs[list(self.master_ERs.keys())[0]].capacity}")
         print(f"Learning rate.: {self.M_LEARNING_RATE}")
         print(f"Gamma: {self.M_GAMMA}")
         print(f"Target net update freq.: {self.M_TARGET_UPDATE}")
