@@ -28,14 +28,11 @@ def train(env, model, task_list, results_path, **kwargs):
     filename_ep_reward = results_path / 'Episode rewards.png'
     filename_cum_reward = results_path / 'Cumulative rewards.png'
     ep_rewards = []
-    prev_task = None
     for i_episode in range(kwargs.get('num_episodes')):
         # Sample a task and initialize environment
         chosen_task = random.choice(task_list)
         print(f"Chosen task: {chosen_task.name}")  # DEBUG
-        if prev_task != chosen_task:
-            model.master_policy.reset()
-        prev_task = chosen_task
+        model.master_policy.reset()
         # Train on ERs
         for i in range(kwargs.get('train_iters')):
             model.optimize_master(model.master_ERs[chosen_task.name])
@@ -64,8 +61,10 @@ def train(env, model, task_list, results_path, **kwargs):
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
             model.master_ERs[chosen_task.name].push(state.unsqueeze(0), master_action,
                                                     next_state.unsqueeze(0), reward, done)
-            model.task_ERs[chosen_task.name].push(state.unsqueeze(0), primitive_action,
-                                                  next_state.unsqueeze(0), reward, done)
+            if not model.master_policy.rand_action:
+                # Only adding experience to replay if master actions are following the optimal policy
+                model.task_ERs[chosen_task.name].push(state.unsqueeze(0), primitive_action,
+                                                      next_state.unsqueeze(0), reward, done)
             state = next_state
             if done:
                 if ep_reward > 90:

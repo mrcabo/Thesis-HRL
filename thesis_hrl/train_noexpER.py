@@ -28,14 +28,11 @@ def train(env, model, task_list, results_path, **kwargs):
     filename_ep_reward = results_path / 'Episode rewards.png'
     filename_cum_reward = results_path / 'Cumulative rewards.png'
     ep_rewards = []
-    prev_task = None
     for i_episode in range(kwargs.get('num_episodes')):
         # Sample a task and initialize environment
         chosen_task = random.choice(task_list)
         print(f"Chosen task: {chosen_task.name}")  # DEBUG
-        if prev_task != chosen_task:
-            model.master_policy.reset()
-        prev_task = chosen_task
+        model.master_policy.reset()
         # Train on ERs
         if len(model.master_ERs[chosen_task.name]) > 0:
             for i in range(kwargs.get('train_iters_M')):
