@@ -27,7 +27,7 @@ def plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filena
 def train(env, model, task_list, results_path, **kwargs):
     filename_ep_reward = results_path / 'Episode rewards.png'
     filename_cum_reward = results_path / 'Cumulative rewards.png'
-    ep_rewards = []
+    cycle_rewards = []
     for i_episode in range(kwargs.get('num_episodes')):
         # Sample a task and initialize environment
         chosen_task = random.choice(task_list)
@@ -51,32 +51,34 @@ def train(env, model, task_list, results_path, **kwargs):
         env.reset()
         state = env.set_current_task(chosen_task)
         state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
-        ep_reward = 0
-        for t in count():
+        cycle_reward = 0
+        for t in range(kwargs.get('collect_exp')):
             master_action = model.master_policy.select_action(state)  # Chooses a policy
             primitive_action = model.sub_policies[master_action.item()].select_action(state)
             next_state, reward, done, _ = env.step(primitive_action.item())
             # print(f"Primitive action taken: {policy_action.item()}")
-            ep_reward += reward
+            cycle_reward += reward
             next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
             done = torch.tensor([done], dtype=torch.bool, device=model.device)
             model.master_ERs[chosen_task.name].push(state.unsqueeze(0), master_action,
                                                     next_state.unsqueeze(0), reward, done)
-            model.task_ERs[chosen_task.name].push(state.unsqueeze(0), primitive_action,
-                                                  next_state.unsqueeze(0), reward, done)
+            if not model.master_policy.rand_action:
+                # Only adding experience to replay if master actions are following the optimal policy
+                model.task_ERs[chosen_task.name].push(state.unsqueeze(0), primitive_action,
+                                                      next_state.unsqueeze(0), reward, done)
             state = next_state
             if done:
-                if ep_reward > 90:
-                    print(f"Success in ep. {i_episode}!! Ep. reward: {ep_reward}")
-                ep_rewards.append(ep_reward)
-                break
+                state = env.reset()
+                state = env.set_current_task(chosen_task)
+                state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
 
-        if i_episode % 100 == 0:
+        cycle_rewards.append(cycle_reward)
+        if i_episode % 500 == 0:
             print(f"Episode {i_episode}")
-            plot_and_save(model, ep_rewards, results_path, filename_ep_reward, filename_cum_reward)
+            plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward)
 
-    cum_r = plot_and_save(model, ep_rewards, results_path, filename_ep_reward, filename_cum_reward)
+    cum_r = plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward)
     model.save_task_memories(results_path)
     print('Training complete')
     print(f"Cumulative reward: {cum_r}")
@@ -96,7 +98,7 @@ if __name__ == '__main__':
         Path.mkdir(results_path, parents=True)
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.MAKE_SOUP, Tasks.MAKE_TEA]
+    tasks_list = [Tasks.MAKE_PASTA, Tasks.MAKE_TEA]
 
     my_model = HRLDQN(env.observation_space.shape[0], env.action_space.n, **hyperparam)
     my_model.print_model()
