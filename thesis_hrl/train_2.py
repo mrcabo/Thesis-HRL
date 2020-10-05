@@ -98,7 +98,7 @@ if __name__ == '__main__':
         Path.mkdir(results_path, parents=True)
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.MAKE_PANCAKES]
+    tasks_list = [Tasks.MAKE_PASTA, Tasks.MAKE_TEA]
 
     my_model = HRLDQN(env.observation_space.shape[0], env.action_space.n, **hyperparam)
     my_model.print_model()
