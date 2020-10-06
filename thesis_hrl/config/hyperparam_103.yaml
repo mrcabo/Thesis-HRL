@@ -1,0 +1,31 @@
+num_episodes: 10000
+batch_size: 32
+train_iters_M: 500
+train_iters: 500
+test_episodes: 15
+task_ER: 1.e+5
+collect_exp: 2000
+remind_freq: 10
+#num_tasks: 2
+#retrain_master_episodes: 10000
+
+master_eps_decay: 450
+master_eps_start: 1.0
+master_eps_end: 0.1
+master_target_update: 20
+master_lr: 0.01
+master_gamma: 0.9
+master_ER: 2000
+master_hidden_size: !!python/tuple
+  - 1000
+  - 500
+n_sub_policies: 3
+sub_eps_decay: 1.e+7
+sub_eps_start: 1.0
+sub_eps_end: 0.1
+sub_target_update: 1.e+3
+sub_lr: 0.00025
+sub_gamma: 0.9
+sub_hidden_size: !!python/tuple
+  - 1000
+  - 500
