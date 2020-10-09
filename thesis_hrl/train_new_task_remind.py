@@ -60,9 +60,10 @@ def train_new_task(env, model, task_list, **kwargs):
     return cycle_reward
 
 
-def remind_old_tasks(model):
+def remind_old_tasks(model, train_iters):
     for task in model.prev_trained:
-        model.optimize_all_subs(model.task_ERs[task.name])
+        for _ in range(train_iters):
+            model.optimize_all_subs(model.task_ERs[task.name])
 
 
 def train(env, model, task_list, results_path, **kwargs):
@@ -75,7 +76,7 @@ def train(env, model, task_list, results_path, **kwargs):
         cycle_reward = train_new_task(env, model, task_list, **kwargs)
         # Remind old tasks every n-th cycles
         if i_cycle % remind_freq == 0:
-            remind_old_tasks(model)
+            remind_old_tasks(model, kwargs.get('train_iters'))
         cycle_rewards.append(cycle_reward)
         # Plot and save every 500 cycles
         if i_cycle % 500 == 0:
