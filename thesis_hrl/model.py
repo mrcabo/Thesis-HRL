@@ -275,6 +275,9 @@ class HRLDQN:
         for key in self.task_ERs.keys():
             pathfile = path / (key + '.pickle')
             self.task_ERs[key] = torch.load(pathfile)
+        for key in self.master_ERs.keys():
+            pathfile = path / (key + '.pickle')
+            self.master_ERs[key] = torch.load(pathfile)
 
 
 def plot_info(data, path, title=None, labels=None, fig_num=None):
