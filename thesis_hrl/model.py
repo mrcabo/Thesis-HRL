@@ -254,14 +254,14 @@ class HRLDQN:
         # Loads master policy
         policy_path = path / 'master_policy_net.pt'
         target_path = path / 'master_target_net.pt'
-        self.master_policy.policy_net.load_state_dict(torch.load(policy_path))
-        self.master_policy.target_net.load_state_dict(torch.load(target_path))
+        self.master_policy.policy_net.load_state_dict(torch.load(policy_path, map_location=self.device))
+        self.master_policy.target_net.load_state_dict(torch.load(target_path, map_location=self.device))
         # Saves sub_policies
         for i, sub_policy in enumerate(self.sub_policies):
             policy_path = path / ('sub_policy_net' + str(i) + '.pt')
             target_path = path / ('sub_target_net' + str(i) + '.pt')
-            sub_policy.policy_net.load_state_dict(torch.load(policy_path))
-            sub_policy.target_net.load_state_dict(torch.load(target_path))
+            sub_policy.policy_net.load_state_dict(torch.load(policy_path, map_location=self.device))
+            sub_policy.target_net.load_state_dict(torch.load(target_path, map_location=self.device))
 
     def save_task_memories(self, path):
         for key, memoy in self.task_ERs.items():
