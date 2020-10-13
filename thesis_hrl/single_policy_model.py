@@ -156,8 +156,8 @@ class QLearning:
         # Loads weights of the network from a file
         policy_path = path / 'policy_net.pt'
         target_path = path / 'target_net.pt'
-        self.policy_net.load_state_dict(torch.load(policy_path))
-        self.target_net.load_state_dict(torch.load(target_path))
+        self.policy_net.load_state_dict(torch.load(policy_path, map_location=self.device))
+        self.target_net.load_state_dict(torch.load(target_path, map_location=self.device))
 
     def testing_mode(self):
         self.policy_net.eval()
