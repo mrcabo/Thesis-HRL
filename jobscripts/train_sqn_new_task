@@ -22,8 +22,8 @@ source venv/bin/activate
 # pip install -e /home/s3736555/Household-env
 # pip install -e .
 
-hp="hyperparam_02.yaml"
-weights="hyperparam_01"
+hp="hyperparam_sqn_01.yaml"
+weights="hyperparam_34"
 echo "Starting execution for $hp"
 
-python -u thesis_hrl/train_new_task_remind.py --hyperparam $hp --weights $weights
+python -u thesis_hrl/single_policy_train_new_task.py --hyperparam $hp --weights $weights
