@@ -45,10 +45,17 @@ class PolicyUsage:
         plt.savefig(path)
 
 
+def train_master(model, task_name, train_iters_M):
+    for _ in range(train_iters_M):
+        model.optimize_master(model.master_ERs[task_name])
+        model.master_policy.updates_done += 1
+        if model.master_policy.updates_done % model.M_TARGET_UPDATE == 0:
+            model.master_policy.target_net.load_state_dict(model.master_policy.policy_net.state_dict())
+
+
 def test(env, model, task_list, results_path, **kwargs):
-    model.load_model(results_path)
     model.testing_mode()
-    env.render()
+    # env.render()
     n_episodes = kwargs.get("test_episodes", 10)
     successful_episodes = 0
     usage = PolicyUsage(kwargs.get("n_sub_policies"))
@@ -70,7 +77,7 @@ def test(env, model, task_list, results_path, **kwargs):
                 ep_reward += reward
                 next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
                 state = next_state
-                env.render()
+                # env.render()
                 if done:
                     if ep_reward > 90:
                         successful_episodes += 1
@@ -97,11 +104,18 @@ if __name__ == '__main__':
     results_path = results_path / hyperparam_pathname.stem
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.MAKE_TEA]
+    tasks_list = [Tasks.CLEAN_STOVE]
     env.set_current_task(tasks_list[0])  # TODO: delete this if we change between tasks during learning
 
     my_model = HRLDQN(env.observation_space.shape[0], env.action_space.n, **hyperparam)
     my_model.print_model()
+    # Load pre-trained policies in other tasks
+    if not args.weights:
+        raise Exception("The necessary argument --weights must indicate the name of a real directory that contains "
+                        "the pre-trained weights.")
+    my_model.load_model(results_path.parent / args.weights)
+    my_model.load_task_memories(results_path.parent / args.weights)
+    train_master(my_model, tasks_list[0].name, hyperparam.get('train_iters_M'))
 
     test(env, my_model, tasks_list, results_path, **hyperparam)
 
