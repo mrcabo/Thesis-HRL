@@ -1,4 +1,7 @@
 import random
+import time
+from collections import deque
+from datetime import timedelta
 from itertools import count
 from pathlib import Path
 
@@ -15,6 +18,10 @@ from thesis_hrl.training import plot_and_save
 
 
 def train(env, model, task_list, results_path, **kwargs):
+    start_time = time.time()
+    successful_runs = deque(maxlen=100)
+    timer_flag = True  # Indicates if the experiment already achieved a X % success rate. Avoids repeating measurement
+    success_threshold = kwargs.get('success_threshold')
     filename_ep_reward = results_path / 'Episode rewards.png'
     filename_cum_reward = results_path / 'Cumulative rewards.png'
     ep_rewards = []
@@ -43,6 +50,11 @@ def train(env, model, task_list, results_path, **kwargs):
             if model.steps_done % model.TARGET_UPDATE == 0:
                 model.target_net.load_state_dict(model.policy_net.state_dict())
             if done:
+                successful_runs.append(1 if reward > 0 else 0)
+                if timer_flag and (sum(successful_runs) >= success_threshold):
+                    time_elapsed = timedelta(seconds=time.time() - start_time)
+                    print(f"Time elapsed until {success_threshold} success rate: {time_elapsed}")
+                    timer_flag = not timer_flag
                 if ep_reward > 90:
                     print(f"Success in ep. {i_episode}!! Ep. reward: {ep_reward}")
                 ep_rewards.append(ep_reward)

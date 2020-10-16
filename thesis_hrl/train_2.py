@@ -1,4 +1,7 @@
 import random
+import time
+from collections import deque
+from datetime import timedelta
 from itertools import count
 from pathlib import Path
 
@@ -25,6 +28,10 @@ def plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filena
 
 
 def train(env, model, task_list, results_path, **kwargs):
+    start_time = time.time()
+    successful_runs = deque(maxlen=100)
+    timer_flag = True  # Indicates if the experiment already achieved a X % success rate. Avoids repeating measurement
+    success_threshold = kwargs.get('success_threshold')
     filename_ep_reward = results_path / 'Episode rewards.png'
     filename_cum_reward = results_path / 'Cumulative rewards.png'
     cycle_rewards = []
@@ -69,6 +76,11 @@ def train(env, model, task_list, results_path, **kwargs):
                                                       next_state.unsqueeze(0), reward, done)
             state = next_state
             if done:
+                successful_runs.append(1 if reward > 0 else 0)
+                if timer_flag and (sum(successful_runs) >= success_threshold):
+                    time_elapsed = timedelta(seconds=time.time() - start_time)
+                    print(f"Time elapsed until {success_threshold} success rate: {time_elapsed}")
+                    timer_flag = not timer_flag
                 state = env.reset()
                 state = env.set_current_task(chosen_task)
                 state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
