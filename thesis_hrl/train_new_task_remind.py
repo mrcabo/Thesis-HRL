@@ -15,7 +15,7 @@ from thesis_hrl.utils import parse_arguments, normalize_values
 from thesis_hrl.training import train, plot_and_save
 
 
-def train_new_task(env, model, task_list, start_time, successful_runs, timer_flag, success_threshold, **kwargs):
+def train_new_task(env, model, task_list, start_time, successful_runs, timer_flag, threshold, **kwargs):
     # Sample a task and initialize environment
     chosen_task = random.choice(task_list)
     print(f"Chosen task: {chosen_task.name}")  # DEBUG
@@ -57,9 +57,9 @@ def train_new_task(env, model, task_list, start_time, successful_runs, timer_fla
         state = next_state
         if done:
             successful_runs.append(1 if reward > 0 else 0)
-            if timer_flag and (sum(successful_runs) >= success_threshold):
+            if timer_flag and (sum(successful_runs) >= threshold):
                 time_elapsed = timedelta(seconds=time.time() - start_time)
-                print(f"Time elapsed until {success_threshold} success rate: {time_elapsed}")
+                print(f"Time elapsed until {threshold} success rate: {time_elapsed}")
                 timer_flag = not timer_flag
             state = env.reset()
             state = env.set_current_task(chosen_task)
@@ -78,7 +78,7 @@ def train(env, model, task_list, results_path, **kwargs):
     start_time = time.time()
     successful_runs = deque(maxlen=100)
     timer_flag = True  # Indicates if the experiment already achieved a X % success rate. Avoids repeating measurement
-    success_threshold = kwargs.get('success_threshold')
+    threshold = kwargs.get('success_threshold')
     filename_ep_reward = results_path / 'Episode rewards.png'
     filename_cum_reward = results_path / 'Cumulative rewards.png'
     cycle_rewards = []
@@ -86,7 +86,7 @@ def train(env, model, task_list, results_path, **kwargs):
     for i_cycle in range(kwargs.get('num_episodes')):
         # Train on new task
         cycle_reward = train_new_task(env, model, task_list, start_time, successful_runs, timer_flag,
-                                      success_threshold, **kwargs)
+                                      threshold, **kwargs)
         # Remind old tasks every n-th cycles
         if i_cycle % remind_freq == 0:
             remind_old_tasks(model, kwargs.get('train_iters'))
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     # NOTE: pre-trained weights should be copied to results_path
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.CLEAN_STOVE]
+    tasks_list = [Tasks.MAKE_SOUP]
     my_model = HRLDQN(env.observation_space.shape[0], env.action_space.n, **hyperparam)
     my_model.print_model()
 
@@ -127,7 +127,7 @@ if __name__ == '__main__':
                         "the pre-trained weights.")
     my_model.load_model(results_path.parent / args.weights)
     my_model.load_task_memories(results_path.parent / args.weights)
-    my_model.prev_trained = [Tasks.MAKE_TEA, Tasks.MAKE_PASTA, Tasks.MAKE_SOUP]
+    my_model.prev_trained = [Tasks.MAKE_TEA, Tasks.MAKE_PASTA]
     # Train model for the new task
     train(env, my_model, tasks_list, results_path, **hyperparam)
 
