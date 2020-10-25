@@ -57,10 +57,10 @@ def train_new_task(env, model, task_list, start_time, successful_runs, timer_fla
         state = next_state
         if done:
             successful_runs.append(1 if reward > 0 else 0)
-            if timer_flag and (sum(successful_runs) >= threshold):
+            if timer_flag[0] and (sum(successful_runs) >= threshold):
                 time_elapsed = timedelta(seconds=time.time() - start_time)
                 print(f"Time elapsed until {threshold} success rate: {time_elapsed}")
-                timer_flag = not timer_flag
+                timer_flag[0] = not timer_flag[0]
             state = env.reset()
             state = env.set_current_task(chosen_task)
             state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
@@ -77,7 +77,7 @@ def remind_old_tasks(model, train_iters):
 def train(env, model, task_list, results_path, **kwargs):
     start_time = time.time()
     successful_runs = deque(maxlen=100)
-    timer_flag = True  # Indicates if the experiment already achieved a X % success rate. Avoids repeating measurement
+    timer_flag = [True]  # Indicates if the experiment already achieved a X % success rate. Avoids repeating measurement
     threshold = kwargs.get('success_threshold')
     filename_ep_reward = results_path / 'Episode rewards.png'
     filename_cum_reward = results_path / 'Cumulative rewards.png'
