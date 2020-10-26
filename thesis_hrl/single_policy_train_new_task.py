@@ -14,7 +14,6 @@ from thesis_hrl.config import CONF_DIR
 from thesis_hrl.training import plot_and_save
 from thesis_hrl.single_policy_train import train
 
-
 if __name__ == '__main__':
     args = parse_arguments()  # vars(args)  # Turns it into a dictionary.
 
@@ -29,15 +28,17 @@ if __name__ == '__main__':
         Path.mkdir(results_path, parents=True)
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.MAKE_PASTA, Tasks.MAKE_TEA, Tasks.MAKE_SOUP, Tasks.CLEAN_STOVE]
+    new_tasks = [Tasks.MAKE_SOUP]
+    tasks_list = [Tasks.MAKE_PASTA, Tasks.MAKE_TEA] + new_tasks
     env.set_current_task(tasks_list[0])
 
     my_model = QLearning(env.observation_space.shape[0], env.action_space.n, **hyperparam)
     my_model.print_hyperparam()
     # Load pre-trained policies in other tasks
     if not args.weights:
-        raise Exception("The necessary argument --weights must indicate the name of a real directory that contains the pre-trained weights.")
+        raise Exception("The necessary argument --weights must indicate the name "
+                        "of a real directory that contains the pre-trained weights.")
     my_model.load_model(results_path.parent / args.weights)
-    train(env, my_model, tasks_list, results_path, **hyperparam)
+    train(env, my_model, tasks_list, results_path, new_tasks, **hyperparam)
 
     env.close()
