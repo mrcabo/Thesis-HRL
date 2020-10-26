@@ -12,7 +12,7 @@ from household_env.envs.house_env import Tasks
 from thesis_hrl.config import CONF_DIR
 from thesis_hrl.model import HRLDQN
 from thesis_hrl.utils import parse_arguments, normalize_values
-from thesis_hrl.training import train, plot_and_save
+from thesis_hrl.train_2 import plot_and_save
 
 
 def train_new_task(env, model, task_list, start_time, successful_runs, timer_flag, threshold, **kwargs):
