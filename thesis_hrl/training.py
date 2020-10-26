@@ -14,12 +14,12 @@ from thesis_hrl.config import CONF_DIR
 
 
 def plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward):
-    plot_info(np.array(cycle_rewards), filename_ep_reward, 'Episode rewards', ('Cycle', 'Reward'), fig_num=1)
+    plot_info(np.array(cycle_rewards), filename_ep_reward, 'Episode rewards', ('Episode', 'Reward'), fig_num=1)
     # Cumulative reward
     cum_reward = [cycle_rewards[0]]
     for val in cycle_rewards[1:]:
         cum_reward.append(val + cum_reward[-1])
-    plot_info(cum_reward, filename_cum_reward, 'Cumulative reward', ('Cycle', 'Reward'), fig_num=2)
+    plot_info(cum_reward, filename_cum_reward, 'Cumulative reward', ('Episode', 'Reward'), fig_num=2)
     model.save_model(results_path)
     return cum_reward[-1]
 
