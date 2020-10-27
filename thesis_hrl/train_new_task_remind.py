@@ -117,7 +117,7 @@ if __name__ == '__main__':
     # NOTE: pre-trained weights should be copied to results_path
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.CLEAN_STOVE]
+    tasks_list = [Tasks.MAKE_PANCAKES]
     my_model = HRLDQN(env.observation_space.shape[0], env.action_space.n, **hyperparam)
     my_model.print_model()
 
@@ -127,7 +127,7 @@ if __name__ == '__main__':
                         "the pre-trained weights.")
     my_model.load_model(results_path.parent / args.weights)
     my_model.load_task_memories(results_path.parent / args.weights)
-    my_model.prev_trained = [Tasks.MAKE_TEA, Tasks.MAKE_PASTA, Tasks.MAKE_SOUP]
+    my_model.prev_trained = [Tasks.MAKE_TEA, Tasks.MAKE_PASTA, Tasks.MAKE_SOUP, Tasks.CLEAN_STOVE]
     # Train model for the new task
     train(env, my_model, tasks_list, results_path, **hyperparam)
 
