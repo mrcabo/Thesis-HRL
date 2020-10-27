@@ -50,7 +50,8 @@ def train(env, model, task_list, results_path, new_tasks, **kwargs):
             if model.steps_done % model.TARGET_UPDATE == 0:
                 model.target_net.load_state_dict(model.policy_net.state_dict())
             if done:
-                successful_runs.append(1 if (reward > 0 and chosen_task in new_tasks) else 0)
+                if chosen_task in new_tasks:
+                    successful_runs.append(1 if reward > 0 else 0)
                 if timer_flag and (sum(successful_runs) >= success_threshold):
                     time_elapsed = timedelta(seconds=time.time() - start_time)
                     print(f"Time elapsed until {success_threshold} success rate: {time_elapsed}")
