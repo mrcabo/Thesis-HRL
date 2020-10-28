@@ -276,7 +276,7 @@ class HRLDQN:
             pathfile = path / (key + '.pickle')
             self.task_ERs[key] = torch.load(pathfile, map_location=self.device)
         for key in self.master_ERs.keys():
-            pathfile = path / (key + '.pickle')
+            pathfile = path / ('M_' + key + '.pickle')
             self.master_ERs[key] = torch.load(pathfile, map_location=self.device)
 
 
