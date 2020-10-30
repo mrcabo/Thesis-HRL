@@ -92,6 +92,6 @@ if __name__ == '__main__':
 
     my_model = QLearning(env.observation_space.shape[0], env.action_space.n, **hyperparam)
     my_model.print_hyperparam()
-    train(env, my_model, tasks_list, results_path, **hyperparam)
+    train(env, my_model, tasks_list, results_path, new_tasks, **hyperparam)
 
     env.close()
