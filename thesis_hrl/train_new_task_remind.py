@@ -19,7 +19,6 @@ def train_new_task(env, model, task_list, start_time, successful_runs, timer_fla
     # Sample a task and initialize environment
     chosen_task = random.choice(task_list)
     print(f"Chosen task: {chosen_task.name}")  # DEBUG
-    model.master_policy.reset()
     # Train on ERs
     if len(model.master_ERs[chosen_task.name]) > 0:
         for i in range(kwargs.get('train_iters_M')):
@@ -83,6 +82,7 @@ def train(env, model, task_list, results_path, **kwargs):
     filename_cum_reward = results_path / 'Cumulative rewards.png'
     cycle_rewards = []
     remind_freq = kwargs.get('remind_freq')
+    model.master_policy.reset()
     for i_cycle in range(kwargs.get('num_episodes')):
         # Train on new task
         cycle_reward = train_new_task(env, model, task_list, start_time, successful_runs, timer_flag,
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     # NOTE: pre-trained weights should be copied to results_path
 
     env = gym.make('household_env:Household-v0')
-    tasks_list = [Tasks.MAKE_PANCAKES]
+    tasks_list = [Tasks.MAKE_SOUP]
     my_model = HRLDQN(env.observation_space.shape[0], env.action_space.n, **hyperparam)
     my_model.print_model()
 
@@ -127,7 +127,7 @@ if __name__ == '__main__':
                         "the pre-trained weights.")
     my_model.load_model(results_path.parent / args.weights)
     my_model.load_task_memories(results_path.parent / args.weights)
-    my_model.prev_trained = [Tasks.MAKE_TEA, Tasks.MAKE_PASTA, Tasks.MAKE_SOUP, Tasks.CLEAN_STOVE]
+    my_model.prev_trained = [Tasks.MAKE_TEA, Tasks.MAKE_PASTA]
     # Train model for the new task
     train(env, my_model, tasks_list, results_path, **hyperparam)
 
