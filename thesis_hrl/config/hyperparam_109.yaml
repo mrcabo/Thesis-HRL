@@ -1,6 +1,6 @@
 num_episodes: 10000
 batch_size: 32
-train_iters_M: 500
+train_iters_M: 100
 train_iters: 500
 test_episodes: 15
 task_ER: 1.e+5
