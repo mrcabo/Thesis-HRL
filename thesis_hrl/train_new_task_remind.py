@@ -39,14 +39,15 @@ def train_new_task(env, model, task_list, start_time, total_timesteps, successfu
     env.reset()
     state = env.set_current_task(chosen_task)
     state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
-    cycle_reward = 0
+    ep_rewards_cycle = []
+    ep_reward = 0
     for t in range(kwargs.get('collect_exp')):
         master_action = model.master_policy.select_action(state)  # Chooses a policy
         primitive_action = model.sub_policies[master_action.item()].select_action(state)
         next_state, reward, done, _ = env.step(primitive_action.item())
         total_timesteps[0] += 1
         # print(f"Primitive action taken: {policy_action.item()}")
-        cycle_reward += reward
+        ep_reward += reward
         next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
         reward = torch.tensor([reward], dtype=torch.float, device=model.device)
         done = torch.tensor([done], dtype=torch.bool, device=model.device)
@@ -67,8 +68,10 @@ def train_new_task(env, model, task_list, start_time, total_timesteps, successfu
             state = env.reset()
             state = env.set_current_task(chosen_task)
             state = normalize_values(torch.tensor(state, dtype=torch.float, device=model.device))
+            ep_rewards_cycle.append(ep_reward)
+            ep_reward = 0
 
-    return cycle_reward
+    return ep_rewards_cycle
 
 
 def remind_old_tasks(model, train_iters):
@@ -85,23 +88,22 @@ def train(env, model, task_list, results_path, **kwargs):
     threshold = kwargs.get('success_threshold')
     filename_ep_reward = results_path / 'Episode rewards.png'
     filename_cum_reward = results_path / 'Cumulative rewards.png'
-    cycle_rewards = []
+    ep_rewards = []
     remind_freq = kwargs.get('remind_freq')
     for i_cycle in range(kwargs.get('num_episodes')):
         # Train on new task
-        cycle_reward = train_new_task(env, model, task_list, start_time, total_timesteps, successful_runs, timer_flag,
-                                      threshold,
-                                      **kwargs)
+        ep_reward_cycle = train_new_task(env, model, task_list, start_time, total_timesteps, successful_runs,
+                                         timer_flag, threshold, **kwargs)
         # Remind old tasks every n-th cycles
         if i_cycle % remind_freq == 0:
             remind_old_tasks(model, kwargs.get('train_iters'))
-        cycle_rewards.append(cycle_reward)
+        ep_rewards += ep_reward_cycle
         # Plot and save every 500 cycles
         if i_cycle % 500 == 0:
             print(f"Cycle {i_cycle}")
-            plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward)
-    cum_r = plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward)
-    save_list_to_disk(cycle_rewards, results_path / 'ep_rewards.pickle')
+            plot_and_save(model, ep_rewards, results_path, filename_ep_reward, filename_cum_reward)
+    cum_r = plot_and_save(model, ep_rewards, results_path, filename_ep_reward, filename_cum_reward)
+    save_list_to_disk(ep_rewards, results_path / 'ep_rewards.pickle')
     model.save_task_memories(results_path)
     print('Training complete')
     print(f"Cumulative reward: {cum_r}")
