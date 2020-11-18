@@ -11,7 +11,7 @@ from household_env.envs.house_env import Tasks
 
 from thesis_hrl.config import CONF_DIR
 from thesis_hrl.model import HRLDQN
-from thesis_hrl.utils import parse_arguments, normalize_values
+from thesis_hrl.utils import parse_arguments, normalize_values, save_list_to_disk
 from thesis_hrl.train_2 import plot_and_save
 
 
@@ -101,6 +101,7 @@ def train(env, model, task_list, results_path, **kwargs):
             print(f"Cycle {i_cycle}")
             plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward)
     cum_r = plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filename_cum_reward)
+    save_list_to_disk(cycle_rewards, results_path / 'ep_rewards.pickle')
     model.save_task_memories(results_path)
     print('Training complete')
     print(f"Cumulative reward: {cum_r}")

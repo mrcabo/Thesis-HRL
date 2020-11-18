@@ -1,4 +1,5 @@
 import argparse
+import pickle
 from collections import namedtuple
 
 import numpy as np
@@ -55,3 +56,14 @@ def parse_arguments():
                         help='Experiment folder name e.g. "hyperparam_01".')
     args = parser.parse_args()
     return args
+
+
+def save_list_to_disk(my_list, pathname):
+    with open(pathname, 'wb') as filehandle:
+        pickle.dump(my_list, filehandle)
+
+
+def load_list_from_disk(pathname):
+    with open(pathname, 'rb') as filehandle:
+        my_list = pickle.load(filehandle)
+    return my_list
