@@ -16,6 +16,7 @@ def plot(mean, std, filename, title='', ylabel='y'):
     # ax.legend(loc='lower right')
     ax.set_xlabel('Steps')
     ax.set_ylabel(ylabel)
+    ax.ticklabel_format(style='sci', scilimits=(0, 5))
     ax.grid()
     plt.tight_layout()
     plt.savefig(filename)
