@@ -29,6 +29,7 @@ def plot_and_save(model, cycle_rewards, results_path, filename_ep_reward, filena
 
 def train(env, model, task_list, results_path, **kwargs):
     start_time = time.time()
+    total_timesteps = 0
     successful_runs = deque(maxlen=100)
     timer_flag = True  # Indicates if the experiment already achieved a X % success rate. Avoids repeating measurement
     success_threshold = kwargs.get('success_threshold')
@@ -63,6 +64,7 @@ def train(env, model, task_list, results_path, **kwargs):
             master_action = model.master_policy.select_action(state)  # Chooses a policy
             primitive_action = model.sub_policies[master_action.item()].select_action(state)
             next_state, reward, done, _ = env.step(primitive_action.item())
+            total_timesteps += 1
             # print(f"Primitive action taken: {policy_action.item()}")
             cycle_reward += reward
             next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
@@ -80,6 +82,7 @@ def train(env, model, task_list, results_path, **kwargs):
                 if timer_flag and (sum(successful_runs) >= success_threshold):
                     time_elapsed = timedelta(seconds=time.time() - start_time)
                     print(f"Time elapsed until {success_threshold} success rate: {time_elapsed}")
+                    print(f"Timesteps taken until {success_threshold} success rate: {total_timesteps}")
                     timer_flag = not timer_flag
                 state = env.reset()
                 state = env.set_current_task(chosen_task)

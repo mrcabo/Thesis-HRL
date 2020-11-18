@@ -15,7 +15,8 @@ from thesis_hrl.utils import parse_arguments, normalize_values
 from thesis_hrl.train_2 import plot_and_save
 
 
-def train_new_task(env, model, task_list, start_time, successful_runs, timer_flag, threshold, **kwargs):
+def train_new_task(env, model, task_list, start_time, total_timesteps, successful_runs, timer_flag, threshold,
+                   **kwargs):
     # Sample a task and initialize environment
     chosen_task = random.choice(task_list)
     print(f"Chosen task: {chosen_task.name}")  # DEBUG
@@ -43,6 +44,7 @@ def train_new_task(env, model, task_list, start_time, successful_runs, timer_fla
         master_action = model.master_policy.select_action(state)  # Chooses a policy
         primitive_action = model.sub_policies[master_action.item()].select_action(state)
         next_state, reward, done, _ = env.step(primitive_action.item())
+        total_timesteps[0] += 1
         # print(f"Primitive action taken: {policy_action.item()}")
         cycle_reward += reward
         next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
@@ -60,6 +62,7 @@ def train_new_task(env, model, task_list, start_time, successful_runs, timer_fla
             if timer_flag[0] and (sum(successful_runs) >= threshold):
                 time_elapsed = timedelta(seconds=time.time() - start_time)
                 print(f"Time elapsed until {threshold} success rate: {time_elapsed}")
+                print(f"Timesteps taken until {threshold} success rate: {total_timesteps[0]}")
                 timer_flag[0] = not timer_flag[0]
             state = env.reset()
             state = env.set_current_task(chosen_task)
@@ -76,6 +79,7 @@ def remind_old_tasks(model, train_iters):
 
 def train(env, model, task_list, results_path, **kwargs):
     start_time = time.time()
+    total_timesteps = [0]
     successful_runs = deque(maxlen=100)
     timer_flag = [True]  # Indicates if the experiment already achieved a X % success rate. Avoids repeating measurement
     threshold = kwargs.get('success_threshold')
@@ -85,8 +89,9 @@ def train(env, model, task_list, results_path, **kwargs):
     remind_freq = kwargs.get('remind_freq')
     for i_cycle in range(kwargs.get('num_episodes')):
         # Train on new task
-        cycle_reward = train_new_task(env, model, task_list, start_time, successful_runs, timer_flag,
-                                      threshold, **kwargs)
+        cycle_reward = train_new_task(env, model, task_list, start_time, total_timesteps, successful_runs, timer_flag,
+                                      threshold,
+                                      **kwargs)
         # Remind old tasks every n-th cycles
         if i_cycle % remind_freq == 0:
             remind_old_tasks(model, kwargs.get('train_iters'))

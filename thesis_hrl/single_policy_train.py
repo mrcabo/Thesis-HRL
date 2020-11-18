@@ -19,6 +19,7 @@ from thesis_hrl.training import plot_and_save
 
 def train(env, model, task_list, results_path, new_tasks, **kwargs):
     start_time = time.time()
+    total_timesteps = 0
     successful_runs = deque(maxlen=100)
     timer_flag = True  # Indicates if the experiment already achieved a X % success rate. Avoids repeating measurement
     success_threshold = kwargs.get('success_threshold')
@@ -36,6 +37,7 @@ def train(env, model, task_list, results_path, new_tasks, **kwargs):
             # Select action and execute it
             action = model.select_action(state)
             next_state, reward, done, _ = env.step(action.item())
+            total_timesteps += 1
             ep_reward += reward
             next_state = normalize_values(torch.tensor(next_state, dtype=torch.float, device=model.device))
             reward = torch.tensor([reward], dtype=torch.float, device=model.device)
@@ -55,6 +57,7 @@ def train(env, model, task_list, results_path, new_tasks, **kwargs):
                 if timer_flag and (sum(successful_runs) >= success_threshold):
                     time_elapsed = timedelta(seconds=time.time() - start_time)
                     print(f"Time elapsed until {success_threshold} success rate: {time_elapsed}")
+                    print(f"Timesteps taken until {success_threshold} success rate: {total_timesteps}")
                     timer_flag = not timer_flag
                 if ep_reward > 90:
                     print(f"Success in ep. {i_episode}!! Ep. reward: {ep_reward}")
