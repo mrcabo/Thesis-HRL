@@ -17,6 +17,7 @@ def plot(mean, std, filename, title='', ylabel='y'):
     ax.set_xlabel('Steps')
     ax.set_ylabel(ylabel)
     ax.grid()
+    plt.tight_layout()
     plt.savefig(filename)
 
 
@@ -40,7 +41,7 @@ stacked_arrays = np.dstack((ep_rewards[0], ep_rewards[1], ep_rewards[2]))
 mean = stacked_arrays.mean(axis=2).reshape(-1)
 std = stacked_arrays.std(axis=2).reshape(-1)
 filename = path / 'Episode_rewards.png'
-title = r'Episode reward empirical $\mu$ and $\pm \sigma$'
+title = r'Episode reward $\mu\pm\sigma$'
 plot(mean, std, filename, title, ylabel='Episode reward')
 
 # Calculate cum. reward mean-std
@@ -48,5 +49,5 @@ stacked_arrays = np.dstack((cum_rewards[0], cum_rewards[1], cum_rewards[2]))
 mean = stacked_arrays.mean(axis=2).reshape(-1)
 std = stacked_arrays.std(axis=2).reshape(-1)
 filename = path / 'Cumulative_rewards.png'
-title = r'Cumulative reward empirical $\mu$ and $\pm \sigma$'
+title = r'Cumulative reward $\mu\pm\sigma$'
 plot(mean, std, filename, title, ylabel='Cumulative reward')
