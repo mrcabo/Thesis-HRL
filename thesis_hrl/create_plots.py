@@ -22,6 +22,18 @@ def plot(mean, std, filename, title='', ylabel='y'):
     plt.savefig(filename)
 
 
+def trunc(data_arr):
+    # Truncate array to match min len list
+    min_len = len(data_arr[0])
+    for i in range(1, 3):
+        if len(data_arr[i]) < min_len:
+            min_len = len(data_arr[i])
+    # min_len = 10000 plot only 10000 episodes..
+    for i in range(3):
+        data_arr[i] = data_arr[i][:min_len]
+    return data_arr
+
+
 experiment = 'hyperparam_sqn_23'
 path = Path('/home/diego/Coding/Thesis-HRL/results/temp')
 
@@ -31,11 +43,12 @@ cum_rewards = []
 for i in range(3):
     pathname = path / ('_'.join([experiment, str(i)])) / 'ep_rewards.pickle'
     rewards = np.array(load_list_from_disk(pathname))
-    # cum_reward = [rewards[0]]
-    # for val in rewards[1:]:
-    #     cum_reward.append(val + cum_reward[-1])
     ep_rewards.append(rewards)
     cum_rewards.append(np.cumsum(rewards))
+
+if 'sqn' not in experiment:
+    ep_rewards = trunc(ep_rewards)
+    cum_rewards = trunc(cum_rewards)
 
 # Calculate episode reward mean-std
 stacked_arrays = np.dstack((ep_rewards[0], ep_rewards[1], ep_rewards[2]))
