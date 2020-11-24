@@ -14,7 +14,7 @@ def plot(mean, std, filename, title='', ylabel='y'):
     ax.fill_between(t, mean + std, mean - std, facecolor='tab:blue', alpha=0.5)
     ax.set_title(title)
     # ax.legend(loc='lower right')
-    ax.set_xlabel('Steps')
+    ax.set_xlabel('Episodes')
     ax.set_ylabel(ylabel)
     ax.ticklabel_format(style='sci', scilimits=(0, 5))
     ax.grid()
@@ -28,7 +28,7 @@ def trunc(data_arr):
     for i in range(1, 3):
         if len(data_arr[i]) < min_len:
             min_len = len(data_arr[i])
-    # min_len = 10000 plot only 10000 episodes..
+    min_len = 10000  # plot only 10000 episodes..
     for i in range(3):
         data_arr[i] = data_arr[i][:min_len]
     return data_arr
